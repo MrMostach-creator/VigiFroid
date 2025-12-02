@@ -1,13 +1,18 @@
-# لا نرفع .env أبداً
-.env
-
-# Python cache
+# Python
 __pycache__/
 *.pyc
 
-# Alembic cache (إلا كاين)
-alembic.ini
-migrations/versions/__pycache__/
+# Virtual env
+venv/
+.env
 
-# أي حاجة أخرى ما باغيش ترفعها
+# IDE / Editors
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Migrations cache (اختياري)
 instance/

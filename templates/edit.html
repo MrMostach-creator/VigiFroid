@@ -84,14 +84,7 @@
           {% endfor %}
         </div>
 
-        <!-- Quantity -->
-        <div class="mb-3">
-          {{ form.quantity.label(class="form-label") }}
-          {{ form.quantity(class="form-control", required=True, value=lot.quantity) }}
-          {% for error in form.quantity.errors %}
-          <small class="text-danger">{{ error }}</small>
-          {% endfor %}
-        </div>
+
 
         <!-- Buttons -->
         <div class="d-flex gap-2">

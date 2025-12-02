@@ -151,7 +151,7 @@ def add_lot():
                 type=form.type.data.strip(),
                 expiry_date=form.expiry_date.data,
                 pn=form.pn.data.strip(),
-                quantity=form.quantity.data,
+
             )
 
             if form.image.data:
@@ -203,7 +203,7 @@ def edit_lot(lot_id):
             lot.product_name = form.product_name.data.strip()
             lot.type = form.type.data.strip()
             lot.pn = form.pn.data.strip()
-            lot.quantity = form.quantity.data
+
             lot.expiry_date = form.expiry_date.data
 
             if form.image.data:

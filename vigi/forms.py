@@ -32,10 +32,7 @@ class LotForm(FlaskForm):
         validators=[DataRequired(message=_l("⚠️ PN is required.")), Length(min=1, max=50)]
     )
 
-    quantity = IntegerField(
-        _l("Quantity"),
-        validators=[DataRequired(message=_l("⚠️ Quantity is required.")), NumberRange(min=1, message=_l("⚠️ Quantity must be positive."))]
-    )
+
 
     image = FileField(_l("Image"))
     submit = SubmitField(_l("💾 Save"))

@@ -1,0 +1,159 @@
+/* rtl.css — RTL enhancements for Arabic only */
+
+/* أساسيات RTL */
+html[dir="rtl"] body {
+  direction: rtl;
+  text-align: right;
+}
+
+/* خطّوتك مزيانة: ما نفرضوش RTL على كل الحقول.
+   نستعمل .rtl-input لمن بغيتي حقل معيّن RTL */
+html[dir="rtl"] .rtl-input,
+html[dir="rtl"] textarea.rtl-input {
+  direction: rtl;
+  text-align: right;
+}
+
+/* عناصر نصّية شائعة */
+html[dir="rtl"] .card,
+html[dir="rtl"] .card-body,
+html[dir="rtl"] .card-title,
+html[dir="rtl"] .card-text,
+html[dir="rtl"] .badge,
+html[dir="rtl"] .btn,
+html[dir="rtl"] .table,
+html[dir="rtl"] .btn-group,
+html[dir="rtl"] .menu-title {
+  text-align: right;
+  font-family: 'Noto Naskh Arabic', 'Segoe UI', Tahoma, sans-serif !important;
+}
+
+/* حرفنة خفيفة بدل universal selector */
+html[dir="rtl"] :is(p, h1, h2, h3, h4, h5, h6, .card-title, .card-text, .btn, .badge, .nav-link, .dropdown-item) {
+  letter-spacing: 0.01em;
+}
+
+/* الهيدر */
+html[dir="rtl"] .app-header {
+  direction: rtl;
+}
+
+/* القوائم المنسدلة عامة (مش غير ديال اللغة) */
+html[dir="rtl"] .dropdown-menu {
+  inset-inline-start: auto !important;
+  /* left */
+  inset-inline-end: 0 !important;
+  /* right */
+  text-align: right;
+}
+
+html[dir="rtl"] .dropdown-toggle::after {
+  margin-left: 0;
+  margin-right: .255em;
+  /* نقلب المسافة ديال السهم */
+}
+
+/* قائمة اللغة اللي عندك مسبقاً */
+html[dir="rtl"] .lang-menu-wrap .lang-container {
+  left: auto !important;
+  right: 0 !important;
+  text-align: right;
+}
+
+html[dir="rtl"] .lang-menu-wrap .lang-container a,
+html[dir="rtl"] .lang-menu-wrap .lang-container button {
+  text-align: right;
+}
+
+/* الجداول */
+html[dir="rtl"] table.table th,
+html[dir="rtl"] table.table td {
+  text-align: right;
+}
+
+html[dir="rtl"] table.table th.num,
+html[dir="rtl"] table.table td.num {
+  text-align: left;
+}
+
+/* placeholders */
+html[dir="rtl"] ::placeholder {
+  text-align: right;
+}
+
+/* عناصر أرقام/ايميل تبقى LTR تلقائياً (مفيد لـ PN/LOT/email/phone) */
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="url"],
+html[dir="rtl"] input[type="number"],
+html[dir="rtl"] input[type="tel"],
+html[dir="rtl"] .ltr-input {
+  direction: ltr;
+  text-align: left;
+}
+
+/* قلب الأسهم الشائعة (FontAwesome/Bs Icons) */
+html[dir="rtl"] .chev,
+html[dir="rtl"] [class*="chevron-right"],
+html[dir="rtl"] .bi-chevron-right,
+html[dir="rtl"] .fa-chevron-right {
+  transform: scaleX(-1);
+}
+
+/* مسافات Bootstrap منطقية */
+html[dir="rtl"] .me-auto {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+html[dir="rtl"] .ms-auto {
+  margin-right: auto !important;
+  margin-left: 0 !important;
+}
+
+/* Pagination و Breadcrumb باش يحسوها RTL */
+html[dir="rtl"] .pagination {
+  direction: rtl;
+}
+
+html[dir="rtl"] .breadcrumb {
+  direction: rtl;
+}
+
+html[dir="rtl"] .breadcrumb-item+.breadcrumb-item::before {
+  float: right;
+  padding: 0 .5rem;
+}
+
+/* form-check (اختياري، مفيد إذا استعملتي checkboxes) */
+html[dir="rtl"] .form-check {
+  padding-left: 0;
+  padding-right: 1.5em;
+  text-align: right;
+}
+
+html[dir="rtl"] .form-check-input {
+  float: right;
+  margin-left: 0;
+  margin-right: -1.5em;
+}
+
+/* التماسك في الكروت/الأزرار */
+html[dir="rtl"] .card,
+html[dir="rtl"] .btn-group {
+  text-align: right;
+}
+
+/* Fix password toggle button position in RTL */
+html[dir="rtl"] .password-toggle-pos {
+  right: auto !important;
+  left: 10px !important;
+  padding-right: 0;
+  padding-left: 10px;
+}
+
+/* Add padding to password input to prevent text overlap with button (RTL) */
+html[dir="rtl"] #password {
+  padding-left: 3.5rem;
+  padding-right: 0.75rem;
+  /* Reset LTR padding */
+}

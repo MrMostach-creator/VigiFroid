@@ -1,0 +1,17 @@
+<!-- 500.html -->
+
+{% extends "base.html" %}
+{% block title %}500 - {{ _('Internal Server Error') }}{% endblock %}
+
+{% block content %}
+<div class="container text-center py-5">
+  <h1 class="display-3 fw-bold text-danger">500</h1>
+  <h3 class="mb-3">{{ _('Internal Server Error') }}</h3>
+  <p class="text-muted mb-4">
+    {{ _("An unexpected error occurred on the server. Our team has been notified and is working on it.") }}
+  </p>
+  <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+    🔄 {{ _('Try again') }}
+  </a>
+</div>
+{% endblock %}

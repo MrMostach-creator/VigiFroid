@@ -1,0 +1,23 @@
+{
+  "offline_mode": "📡 Vous êtes actuellement hors ligne — Mode local activé 🔒",
+  "loading_local_data": "Chargement des données locales...",
+  "filter": "Filtrer",
+  "search_placeholder": "Rechercher par nom, PN ou LOT",
+  "status_all": "Tous",
+  "status_valid": "Valides",
+  "status_warning": "Avertis",
+  "status_expired": "Expirés",
+  "total": "Total",
+  "valid": "Valides",
+  "warning": "Avertis",
+  "expired": "Expirés",
+  "no_local_data": "Aucune donnée locale disponible.",
+  "expired_alert_one": "⚠️ 1 lot a expiré !",
+  "expired_alert_many": "⚠️ {{count}} lots ont expiré !",
+  "mode_offline": "Mode Hors Ligne",
+  "menu_title": "Menu",
+  "menu_language": "Langue",
+  "menu_back_online": "Retour en ligne",
+  "menu_refresh": "Rafraîchir",
+  "menu_about": "À propos"
+}

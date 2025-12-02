@@ -1,0 +1,98 @@
+<!-- login.html -->
+{% extends "base.html" %}
+{% block title %}VigiFroid · {{ _('Login') }}{% endblock %}
+{% set page_class = "page login-page" %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh; padding: 20px;">
+  <div class="card w-100 shadow-sm" style="max-width: 400px;">
+    <div class="card-body text-center">
+
+      <div class="brand-hero mb-3">
+        <img class="brand-icon img-fluid rounded-circle"
+             src="{{ url_for('static', filename='images/vigifroid_icon.png') }}"
+             alt="VigiFroid Logo"
+             style="max-height: 100px;">
+      </div>
+
+
+
+      <form method="post" action="{{ url_for('auth.login') }}" oninput="validate()">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+        <div class="mb-3">
+          <input id="username"
+                 name="username"
+                 type="text"
+                 class="form-control"
+                 autocomplete="username"
+                 required
+                 placeholder="{{ _('Username') }}">
+        </div>
+
+        <div class="mb-1 position-relative">
+          <input id="password"
+                 name="password"
+                 type="password"
+                 class="form-control"
+                 autocomplete="current-password"
+                 required
+                 placeholder="{{ _('Password') }}">
+          <button type="button"
+                  class="btn btn-link position-absolute top-50 translate-middle-y password-toggle-pos password-toggle-btn"
+                  onclick="togglePwd()">
+            {{ _('Show') }}
+          </button>
+        </div>
+
+        {# 🔑 رابط "نسيت كلمة السر؟" #}
+        <div class="mb-3 text-end">
+          <a href="{{ url_for('auth.forgot_password') }}"
+             class="small text-decoration-none">
+            {{ _('Forgot password?') }}
+          </a>
+        </div>
+
+        <button id="loginBtn"
+                class="btn btn-primary w-100"
+                type="submit"
+                disabled>
+          {{ _('Login') }}
+        </button>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function togglePwd() {
+    const passwordInput = document.getElementById('password');
+    const toggleButton = document.querySelector('.password-toggle-btn');
+    if (!passwordInput || !toggleButton) return;
+
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    toggleButton.textContent = isPassword ? '{{ _("Hide") }}' : '{{ _("Show") }}';
+  }
+
+  function validate() {
+    const uEl = document.getElementById('username');
+    const pEl = document.getElementById('password');
+    const btn = document.getElementById('loginBtn');
+    if (!uEl || !pEl || !btn) return;
+
+    const u = uEl.value.trim();
+    const p = pEl.value.trim();
+    btn.disabled = !(u && p);
+  }
+
+  window.addEventListener('load', () => {
+    const uEl = document.getElementById('username');
+    if (uEl) uEl.focus();
+    validate();
+  });
+</script>
+{% endblock %}

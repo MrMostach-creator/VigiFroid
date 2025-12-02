@@ -1,0 +1,12 @@
+LOAD DATABASE
+     FROM sqlite:///data/database.db
+     INTO postgresql://postgres:loni@host.docker.internal/vigifroid_db
+
+WITH include no drop,
+     create tables,
+     create indexes,
+     reset sequences
+
+SET work_mem to '16MB',
+    maintenance_work_mem to '512MB',
+    search_path to 'public';

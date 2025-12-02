@@ -1,0 +1,23 @@
+{
+  "offline_mode": "📡 You are currently offline — Local mode enabled 🔒",
+  "loading_local_data": "Loading local data...",
+  "filter": "Filter",
+  "search_placeholder": "Search by product name, PN or LOT",
+  "status_all": "All",
+  "status_valid": "Valid",
+  "status_warning": "Warning",
+  "status_expired": "Expired",
+  "total": "Total",
+  "valid": "Valid",
+  "warning": "Warning",
+  "expired": "Expired",
+  "no_local_data": "No local data available.",
+  "expired_alert_one": "⚠️ 1 lot has expired!",
+  "expired_alert_many": "⚠️ {{count}} lots have expired!",
+  "mode_offline": "Offline Mode",
+  "menu_title": "Menu",
+  "menu_language": "Language",
+  "menu_back_online": "Back online",
+  "menu_refresh": "Refresh",
+  "menu_about": "About"
+}

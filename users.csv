@@ -1,0 +1,2 @@
+id,username,password,role
+1,admin,scrypt:32768:8:1$XNVGZRrSQl6pfIAP$cdc94795549d5275cf9db70f97adafa89cde6e118d82f77cf85b08c216ac5463c1d3a3248d82ad6e829d3897e99c581b32095ad779283176a3e26bbce9196fae,admin

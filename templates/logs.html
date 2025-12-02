@@ -1,0 +1,60 @@
+<!-- logs.html -->
+
+{% extends "base.html" %}
+{% block title %}VigiFroid · {{ _('Audit Log') }}{% endblock %}
+{% set page_class = "page logs-page" %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-start"
+     style="min-height: calc(100vh - var(--header-h)); padding-top: var(--spacing-3xl);">
+  <div class="card w-100 shadow-sm" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+    <div class="card-body">
+      <h2 class="text-center mb-3">{{ _('Audit Log') }}</h2>
+      <p class="text-center text-muted small mb-4">
+        {{ logs|length }} {{ _('entries found') }}
+      </p>
+
+      {% if logs %}
+        <div class="list-group">
+          {% for log in logs %}
+            <div class="list-group-item border rounded mb-2 shadow-sm">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <div>
+                  <strong>{{ _('User') }}:</strong> {{ log.username }}
+                  {% if log.username == 'admin' %}
+                    <span class="badge bg-warning text-dark">👑 Admin</span>
+                  {% else %}
+                    <span class="badge bg-secondary">👤 Employee</span>
+                  {% endif %}
+                </div>
+                <small class="text-muted">
+                  {% if log.timestamp %}
+                    {{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                  {% else %}
+                    {{ _('Unknown') }}
+                  {% endif %}
+                </small>
+              </div>
+
+              <div>
+                <strong>{{ _('Action') }}:</strong>
+                {% if "Added" in log.action %}
+                  <span class="badge bg-success">✅ {{ log.action }}</span>
+                {% elif "Edited" in log.action %}
+                  <span class="badge bg-primary">✏️ {{ log.action }}</span>
+                {% elif "Deleted" in log.action %}
+                  <span class="badge bg-danger">⛔ {{ log.action }}</span>
+                {% else %}
+                  <span class="badge bg-secondary">{{ log.action }}</span>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-center text-muted my-5">{{ _('No logs available') }}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

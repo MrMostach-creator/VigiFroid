@@ -1,0 +1,312 @@
+<!-- templates/index.html -->
+
+{% extends "base.html" %}
+{% block title %}VigiFroid · {{ _('Lots') }}{% endblock %}
+{% set page_class = "page index-page" %}
+
+{% block content %}
+<div class="px-4 pt-4">
+
+  {# Summary counters #}
+  {% set total = total if total is defined else (lots|length if lots is defined else 0) %}
+  {% set per_page = per_page if per_page is defined else 48 %}
+
+  {% if get_locale().startswith('ar') %}
+  <style>
+    body,
+    .card,
+    .badge,
+    input,
+    select,
+    button,
+    .dropdown-menu {
+      direction: rtl;
+      text-align: right;
+      font-family: 'Noto Naskh Arabic', sans-serif;
+    }
+
+    .card-title,
+    .card-text,
+    .status-bar {
+      text-align: right;
+    }
+
+    .status-bar {
+      justify-content: flex-end;
+    }
+
+    th,
+    td {
+      text-align: right;
+    }
+  </style>
+  {% else %}
+  <style>
+    body {
+      direction: ltr;
+    }
+  </style>
+  {% endif %}
+
+  {# Expired alert #}
+  {% if expired_count > 0 %}
+  <div class="alert alert-danger text-center alert-futuristic" role="alert">
+    ⚠️
+    {{ ngettext('Warning! %(num)s lot has expired!',
+    'Warning! %(num)s lots have expired!',
+    expired_count) | format(num=expired_count) }}
+  </div>
+  {% endif %}
+
+  {# Summary badges #}
+  <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+    <span class="badge bg-light text-dark"><strong>{{ total }}</strong> {{ _('Total') }}</span>
+    <span class="badge bg-success">✅ {{ valid_count }} {{ _('Valid') }}</span>
+    <span class="badge bg-warning">⏳ {{ warning_count }} {{ _('Warning (<30d)') }}</span>
+        <span class="badge bg-danger">⛔ {{ expired_count }} {{ _('Expired') }}</span>
+  </div>
+
+  {# Filters form #}
+  <form method="get" class="row g-3 justify-content-center mb-3">
+
+    <div class="col-md-4">
+      <input type="text" name="q" class="form-control" value="{{ q }}"
+        placeholder="{{ _('Search by name, PN or LOT number') }}">
+    </div>
+
+    <div class="col-md-3">
+      <select name="status" class="form-select">
+        <option value="">{{ _('All') }}</option>
+        <option value="valid" {% if status=='valid' %}selected{% endif %}>{{ _('Valid') }}</option>
+        <option value="warning" {% if status=='warning' %}selected{% endif %}>{{ _('Warning') }}</option>
+        <option value="expired" {% if status=='expired' %}selected{% endif %}>{{ _('Expired') }}</option>
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <select name="per_page" class="form-select">
+        <option value="12" {% if per_page==12 %}selected{% endif %}>12</option>
+        <option value="24" {% if per_page==24 %}selected{% endif %}>24</option>
+        <option value="48" {% if per_page==48 %}selected{% endif %}>48</option>
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <button class="btn btn-primary w-100">{{ _('Filter') }}</button>
+    </div>
+
+    <div class="col-md-2">
+      <div class="dropdown w-100">
+        <button class="btn btn-outline-primary dropdown-toggle w-100" data-bs-toggle="dropdown">{{ _('Export')
+          }}</button>
+
+        <ul class="dropdown-menu text-center shadow-sm rounded-3 w-100">
+          <li>
+            <a class="dropdown-item py-2" href="{{ url_for('lots.export_csv', q=q, status=status) }}">
+              📄 {{ _('Export CSV') }}
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item py-2" href="{{ url_for('lots.export_pdf', q=q, status=status) }}">
+              🧾 {{ _('Export PDF') }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </form>
+
+  {# Cards grid #}
+  <div id="lotsContainer" class="row g-3">
+    {% for lot in lots %}
+    {% set card_status = lot.status or lot.temp_status or 'unknown' %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card lot-card {{ card_status }}"
+        data-expiry="{{ lot.expiry_date.strftime('%Y-%m-%d') if lot.expiry_date else '' }}">
+        <div class="card-body position-relative">
+
+          <span class="badge rounded-pill position-absolute top-0 end-0 bg-secondary days-badge">--</span>
+
+          <div class="image-wrap mb-3 text-center">
+            {% if lot.image %}
+            <img class="img-fluid lot-image" src="{{ url_for('static', filename='images/' ~ lot.image) }}"
+              alt="{{ lot.product_name }}" loading="lazy">
+            {% else %}
+            <div class="img-placeholder">—</div>
+            {% endif %}
+          </div>
+
+          <h5 class="card-title text-truncate">{{ lot.product_name }}</h5>
+
+          <p class="card-text">
+            <strong>PN:</strong> {{ lot.pn or '-' }}<br>
+            <strong>Lot:</strong> {{ lot.lot_number }}<br>
+            <strong>{{ _('Expiry') }}:</strong>
+            {% if lot.expiry_date %}
+            {{ format_date(lot.expiry_date) }}
+            {% else %}
+            {{ _('Unknown') }}
+            {% endif %}<br>
+            <strong>{{ _('Type') }}:</strong>
+            <span class="badge bg-secondary">{{ lot.type or '-' }}</span>
+          </p>
+
+          <div class="status-bar mb-3 {{ card_status }}">
+            <span class="status-text">
+              {% if card_status=='valid' %}{{ _('Valid') }}
+              {% elif card_status=='warning' %}{{ _('Warning') }}
+              {% elif card_status=='expired' %}{{ _('Expired') }}
+              {% else %}{{ _('Unknown') }}{% endif %}
+            </span>
+          </div>
+
+          {% if current_user.is_authenticated and current_user.role=='admin' %}
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('lots.edit_lot', lot_id=lot.id) }}" class="btn btn-outline-secondary w-50">{{ _('Edit')
+              }}</a>
+
+            <form method="post" action="{{ url_for('lots.delete_lot', lot_id=lot.id) }}" class="w-50"
+                  data-confirm-delete="{{ _('Are you sure you want to delete this lot?') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-danger w-100">{{ _('Delete') }}</button>
+            </form>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {# Pagination (SERVER-SIDE ONLY) #}
+  {% if pages > 1 %}
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+
+      {% if page > 1 %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('lots.index', q=q, status=status, per_page=per_page, page=page-1) }}">
+          &laquo;
+        </a>
+      </li>
+      {% endif %}
+
+      {% for i in range(1, pages+1) %}
+      <li class="page-item {% if i==page %}active{% endif %}">
+        <a class="page-link" href="{{ url_for('lots.index', q=q, status=status, per_page=per_page, page=i) }}">
+          {{ i }}
+        </a>
+      </li>
+      {% endfor %}
+
+      {% if page < pages %} <li class="page-item">
+        <a class="page-link" href="{{ url_for('lots.index', q=q, status=status, per_page=per_page, page=page+1) }}">
+          &raquo;
+        </a>
+        </li>
+        {% endif %}
+
+    </ul>
+  </nav>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+
+<script>
+  (() => {
+    const MS_PER_DAY = 86400000;
+    const parseLocalYMD = (v) => {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec((v || "").trim());
+      if (!m) return null;
+      return Math.floor(new Date(+m[1], m[2] - 1, +m[3]).getTime() / MS_PER_DAY);
+    };
+    const getTodayIndex = () => {
+      const d = new Date();
+      return Math.floor(new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() / MS_PER_DAY);
+    };
+
+    function updateBadges() {
+      const today = getTodayIndex();
+      document.querySelectorAll(".lot-card").forEach(card => {
+        const badge = card.querySelector(".days-badge");
+        if (!badge) return;
+        const exp = parseLocalYMD(card.dataset.expiry);
+        if (exp === null) { badge.textContent = "—"; return; }
+        const diff = exp - today;
+        badge.textContent = diff < 0 ? "0" : diff + "d";
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", updateBadges);
+    window.addEventListener("pageshow", updateBadges);
+  })();
+</script>
+
+{# Prepare data for JS #}
+{% set lots_list = [] %}
+{% for lot in lots %}
+  {% set _ = lots_list.append({
+    "id": lot.id,
+    "product_name": lot.product_name,
+    "pn": lot.pn,
+    "lot_number": lot.lot_number,
+    "expiry_date": lot.expiry_date.strftime('%Y-%m-%d') if lot.expiry_date else '',
+    "status": lot.temp_status|default('unknown'),
+    "image": lot.image or '',
+    "type": lot.type or ''
+  }) %}
+{% endfor %}
+
+<script type="application/json" id="lots-data">
+{{ lots_list | tojson }}
+</script>
+
+<script>
+const lotsData = JSON.parse(document.getElementById('lots-data').textContent);
+
+// Handle delete confirmation
+document.addEventListener('submit', (e) => {
+  if (e.target.matches('form[data-confirm-delete]')) {
+    const msg = e.target.getAttribute('data-confirm-delete');
+    if (!confirm(msg)) {
+      e.preventDefault();
+    }
+  }
+});
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.ready.then(() => {
+      // --- Send lots ---
+      navigator.serviceWorker.controller?.postMessage({
+        type: "LOTS_SAVE",
+        data: lotsData
+      });
+
+      // --- Send images in small chunks ---
+      const imageUrls = lotsData
+        .filter(l => l.image && l.image.trim() !== "")
+        .map(l => `/static/images/${l.image}`);
+
+      const chunk = (arr, size = 4) =>
+        Array.from({ length: Math.ceil(arr.length / size) },
+          (_, i) => arr.slice(i * size, i * size + size));
+
+      chunk(imageUrls, 4).forEach(grp => {
+        navigator.serviceWorker.controller?.postMessage({
+          type: "CACHE_URLS",
+          urls: grp
+        });
+      });
+
+      console.log("📦 Lots sent:", lotsData.length, " | 🖼 images:", imageUrls.length);
+    });
+  }
+</script>
+
+{% endblock %}

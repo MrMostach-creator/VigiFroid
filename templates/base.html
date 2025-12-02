@@ -1,0 +1,294 @@
+<!-- templates/base.html -->
+
+<!doctype html>
+<html lang="{{ get_locale() }}" dir="{{ 'rtl' if get_locale().startswith('ar') else 'ltr' }}">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>{% block title %}{{ _("VigiFroid") }}{% endblock %}</title>
+
+  <!-- Social / Open Graph -->
+  <meta property="og:title" content="VigiFroid">
+  <meta property="og:description" content="{{ _('Application de suivi et gestion des lots VigiFroid') }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ request.url_root|trim('/') }}">
+  <meta property="og:image"
+    content="{{ url_for('static', filename='images/android-chrome-512x512_vigifroid.png', v=config.ASSET_VERSION) }}">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="{{ url_for('manifest') }}">
+  <meta name="theme-color" content="#4179D9" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="VigiFroid" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="192x192"
+    href="{{ url_for('static', filename='images/android-chrome-192x192_vigifroid.png', v=config.ASSET_VERSION) }}">
+  <link rel="icon" type="image/png" sizes="512x512"
+    href="{{ url_for('static', filename='images/android-chrome-512x512_vigifroid.png', v=config.ASSET_VERSION) }}">
+  <link rel="apple-touch-icon" sizes="180x180"
+    href="{{ url_for('static', filename='images/apple-touch-icon_vigifroid.png', v=config.ASSET_VERSION) }}">
+
+  <!-- CSS (no duplicates) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.min.css', v=config.ASSET_VERSION) }}">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  {% if get_locale().startswith('ar') %}
+  <style>
+    @font-face {
+      font-family: "Noto Naskh Arabic";
+      src: url("{{ url_for('static', filename='fonts/NotoNaskhArabic-Regular.ttf', v=config.ASSET_VERSION) }}") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "Noto Naskh Arabic";
+      src: url("{{ url_for('static', filename='fonts/NotoNaskhArabic-Bold.ttf', v=config.ASSET_VERSION) }}") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/rtl.css', v=config.ASSET_VERSION) }}">
+  {% endif %}
+
+  <!-- Preconnect (OK) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+  <!-- JS -->
+  <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script defer src="{{ url_for('static', filename='js/app.min.js', v=config.ASSET_VERSION) }}"></script>
+
+  <!-- Service Worker register -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker
+          .register("{{ url_for('service_worker') }}", { scope: "/" })
+          .then(reg => {
+            console.log("✅ Service Worker registered:", reg.scope);
+
+            reg.addEventListener("updatefound", () => {
+              const newWorker = reg.installing;
+              if (!newWorker) return;
+
+              newWorker.addEventListener("statechange", () => {
+                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                  if (confirm("تحديث جديد متاح لـ VigiFroid! هل تريد إعادة تحميل الصفحة لتطبيقه؟")) {
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+          })
+          .catch(err => {
+            console.error("❌ SW registration failed:", err);
+            let msg = "⚠️ فشل تحميل التطبيق في وضع عدم الاتصال.";
+            if (String(err.message || "").includes("NetworkError")) {
+              msg += " تحقق من الاتصال بالإنترنت.";
+            } else if (String(err.message || "").includes("404")) {
+              msg += " الملف service-worker.js غير موجود.";
+            }
+            alert(msg);
+          });
+      });
+    } else {
+      console.warn("⚠️ Service Workers غير مدعوم في هذا المتصفح.");
+    }
+  </script>
+</head>
+
+<body class="bg-brand 
+  {% if request.endpoint == 'auth.login' %}page-login layout-centered
+  {% elif request.endpoint == 'main.index' %}page-index
+  {% elif request.endpoint == 'lots.index' %}page-index
+  {% elif request.endpoint in ['lots.add_lot', 'lots.edit_lot'] %}page-edit layout-centered
+  {% elif request.endpoint == 'logs.logs' %}page-logs layout-centered
+  {% else %}layout-centered{% endif %}
+  {% if current_user.is_authenticated and current_user.role == 'admin' %} admin-user{% endif %}">
+
+  <!-- ==== FLASH TOASTS ==== -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div id="flashStack" class="flash-stack">
+      {% for category, message in messages %}
+        {% set bs_class = 'danger' if category == 'error'
+                          else 'success' if category == 'success'
+                          else 'info' %}
+        <div class="vf-toast vf-toast-{{ bs_class }}" data-category="{{ category }}">
+          <div class="vf-toast-icon">
+            {% if bs_class == 'success' %}{% elif bs_class == 'danger' %}{% else %}ℹ️{% endif %}
+          </div>
+          <div class="vf-toast-body">
+            {{ _(message) }}
+          </div>
+          <button type="button"
+                  class="vf-toast-close"
+                  onclick="this.parentElement.remove()">
+            ×
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% endwith %}
+  {# ==== /FLASH TOASTS ==== #}
+
+
+  <header class="app-header py-2">
+    <div class="header-grid">
+      <div class="left">
+        <img src="{{ url_for('static', filename='images/safran_icon.png', v=config.ASSET_VERSION) }}" alt="Safran"
+          class="header-logo">
+      </div>
+      <div class="center">
+        <img src="{{ url_for('static', filename='images/vigifroid_icon.png', v=config.ASSET_VERSION) }}" alt="VigiFroid"
+          class="header-logo">
+      </div>
+      <div class="right">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm" style="border:none;">{{ _("Logout")
+          }}</a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-sm" style="border:none;">{{ _("Login")
+          }}</a>
+        {% endif %}
+
+        <div class="lang-menu-wrap">
+          <button class="btn btn-outline-light btn-sm dropdown-toggle lang-toggle" 
+          type="button"
+          aria-label="{{ _('Menu') }}" 
+          aria-expanded="false" 
+          aria-controls="lang-panel"
+          style="font-size:20px;border:none;">
+            ☰
+          </button>
+          <div class="lang-container" id="lang-panel">
+            <div class="menu-section">
+              <span class="menu-title">{{ _('Language') }}</span>
+              <a href="{{ url_for('main.change_language', lang_code='fr') }}">FR</a>
+              <a href="{{ url_for('main.change_language', lang_code='en') }}">EN</a>
+              <a href="{{ url_for('main.change_language', lang_code='ar') }}">AR</a>
+            </div>
+            <div class="menu-section">
+              <span class="menu-title">{{ _('Appearance') }}</span>
+              <button class="theme-toggle" data-theme="light">{{ _('Light') }}</button>
+              <button class="theme-toggle" data-theme="dark">{{ _('Dark') }}</button>
+            </div>
+            <div class="menu-section">
+              <span class="menu-title">{{ _('Navigation') }}</span>
+              <a href="{{ url_for('main.index') }}">{{ _('Home') }}</a>
+              {% if current_user.is_authenticated and current_user.role == 'admin' %}
+              <a href="{{ url_for('lots.add_lot') }}">{{ _('Add') }}</a>
+              <a href="{{ url_for('logs.logs') }}">{{ _('Logs') }}</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+       <main class="{{ page_class|default('page') }}">
+
+    {% block content %}{% endblock %}
+  </main>
+
+
+  {% block scripts %}{% endblock %}
+  
+  <!-- Flash toasts auto-hide -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.vf-toast').forEach((toast) => {
+        const category = toast.dataset.category || 'info';
+        const timeout = category === 'error' ? 8000 : 5000;
+
+        setTimeout(() => {
+          toast.classList.add('vf-toast-hide');
+          toast.addEventListener('transitionend', () => toast.remove());
+        }, timeout);
+      });
+    });
+  </script>
+
+  <!-- Page helpers at end of body -->
+  <script>
+    (function () {
+      // keep last page WITHOUT lang/ts noise
+      try {
+        function sanitize(u) {
+          const url = new URL(u, location.origin);
+          url.searchParams.delete('lang');
+          url.searchParams.delete('ts');
+          const q = url.searchParams.toString();
+          return url.pathname + (q ? '?' + q : '');
+        }
+        const clean = sanitize(location.href);
+        localStorage.setItem("vf_last_page", clean);
+      } catch (err) {
+        console.warn("⚠️ localStorage unavailable:", err);
+      }
+
+      function goOffline() {
+        if (!location.pathname.includes("offline.html")) {
+          console.warn("🚨 Offline detected — redirecting to offline.html");
+          location.replace("/offline.html");
+        }
+      }
+      function goOnline() {
+        const last = localStorage.getItem("vf_last_page") || "/";
+        if (location.pathname.includes("offline.html")) {
+          console.log("✅ Internet connection restored");
+          location.replace(last);
+        }
+      }
+
+      window.addEventListener("offline", goOffline);
+      window.addEventListener("online", goOnline);
+      if (!navigator.onLine) goOffline();
+
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.ready.then(reg => {
+          reg.active?.postMessage({
+            type: navigator.onLine ? "ONLINE" : "OFFLINE",
+            time: new Date().toISOString(),
+            page: location.pathname
+          });
+        });
+      }
+
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.ready.then(async reg => {
+          if (reg.sync && 'SyncManager' in window) {
+            try { await reg.sync.register('sync-pending-operations'); } catch (e) { }
+          }
+        });
+      }
+
+
+      // small UX: ensure top on load/back-forward cache
+      document.addEventListener("DOMContentLoaded", function () {
+        window.scrollTo(0, 0);
+        window.addEventListener("pageshow", function (e) {
+          if (e.persisted) window.location.reload();
+        });
+      });
+    })();
+  </script>
+</body>
+
+</html>

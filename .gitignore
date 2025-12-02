@@ -1,0 +1,13 @@
+# لا نرفع .env أبداً
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Alembic cache (إلا كاين)
+alembic.ini
+migrations/versions/__pycache__/
+
+# أي حاجة أخرى ما باغيش ترفعها
+instance/

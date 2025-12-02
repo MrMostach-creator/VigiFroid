@@ -1,0 +1,99 @@
+<!-- add.html -->
+
+
+
+{% extends "base.html" %}
+{% block title %}VigiFroid · {{ _('Add new lot') }}{% endblock %}
+{% set page_class = "page add-page" %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-start"
+     style="min-height: calc(100vh - var(--header-h)); padding-top: var(--spacing-3xl);">
+  <div class="card w-100 shadow-sm" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-4">{{ _('Add new lot') }}</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}">{{ _(message) }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- ✅ هنا أضفنا action لربط الفورم بالـ route الصحيح -->
+      <form method="post" action="{{ url_for('lots.add_lot') }}" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <!-- Image -->
+        <div class="mb-3">
+          {{ form.image.label(class="form-label") }}
+          {{ form.image(class="form-control", accept="image/png,image/jpeg,image/jpg") }}
+          {% for error in form.image.errors %}
+            <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+
+        <!-- Product name -->
+        <div class="mb-3">
+          {{ form.product_name.label(class="form-label") }}
+          {{ form.product_name(class="form-control", required=True) }}
+          {% for error in form.product_name.errors %}
+            <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+
+        <!-- PN -->
+        <div class="mb-3">
+          {{ form.pn.label(class="form-label") }}
+          {{ form.pn(class="form-control", required=True) }}
+          {% for error in form.pn.errors %}
+            <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+
+        <!-- LOT number -->
+        <div class="mb-3">
+          {{ form.lot_number.label(class="form-label") }}
+          {{ form.lot_number(class="form-control", required=True) }}
+          {% for error in form.lot_number.errors %}
+            <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+
+        <!-- Expiry date -->
+        <div class="mb-3">
+          {{ form.expiry_date.label(class="form-label") }}
+          {{ form.expiry_date(class="form-control", required=True) }}
+          {% for error in form.expiry_date.errors %}
+            <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+
+        <!-- Type -->
+        <div class="mb-3">
+          {{ form.type.label(class="form-label") }}
+          {{ form.type(class="form-control", required=True) }}
+          {% for error in form.type.errors %}
+            <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+
+        <!-- Quantity -->
+        <div class="mb-3">
+          {{ form.quantity.label(class="form-label") }}
+          {{ form.quantity(class="form-control", required=True) }}
+          {% for error in form.quantity.errors %}
+            <small class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary w-50" type="submit">{{ _('Save') }}</button>
+          <a class="btn btn-outline-secondary w-50" href="{{ url_for('main.index') }}">{{ _('Cancel') }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

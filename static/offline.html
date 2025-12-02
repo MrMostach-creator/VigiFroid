@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VigiFroid – Offline Mode</title>
+
+  <link rel="icon" href="/static/images/favicon-32x32_vigifroid.png" />
+  <link rel="stylesheet" href="/static/css/app.min.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <meta name="theme-color" content="#4179D9" />
+
+  <style>
+    body.bg-brand {
+      background: linear-gradient(135deg,#eaf2ff 0%,#c7d2fe 40%,#93c5fd 100%);
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+    }
+    .offline-banner {
+      background: linear-gradient(90deg,#60a5fa,#3b82f6);
+      color:#fff;
+      font-weight:600;
+      padding:1rem;
+      border-radius:12px;
+      text-align:center;
+      box-shadow:0 4px 20px rgba(65,121,217,.25);
+      margin-bottom:1rem;
+    }
+    .alert-futuristic.alert-danger {
+      background: linear-gradient(90deg,#ff6b6b,#ff8787) !important;
+      color:#fff !important;
+      border:none !important;
+      font-weight:600 !important;
+      text-shadow:0 1px 2px rgba(0,0,0,.3) !important;
+    }
+  </style>
+</head>
+
+<body class="bg-brand page index-page">
+<header class="app-header py-2">
+  <div class="header-grid">
+
+    <div class="left">
+      <img src="/static/images/safran_icon.png" class="header-logo" alt="Safran">
+    </div>
+
+    <div class="center">
+      <img src="/static/images/vigifroid_icon.png" class="header-logo" alt="VigiFroid">
+    </div>
+
+    <div class="right d-flex align-items-center gap-2">
+      <span id="offlineLabel" class="badge bg-secondary">Mode Hors Ligne</span>
+
+      <!-- 🌐 Hamburger Language Menu -->
+      <div class="dropdown">
+        <button class="btn btn-outline-light btn-sm dropdown-toggle"
+                type="button"
+                id="langMenuBtn"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                style="font-size:20px;border:none;">
+          ☰
+        </button>
+
+        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="langMenuBtn">
+          
+          <li><a class="dropdown-item lang-option" data-lang="fr">FR </a></li>
+          <li><a class="dropdown-item lang-option" data-lang="en">EN </a></li>
+          <li><a class="dropdown-item lang-option" data-lang="ar">AR </a></li>
+
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<main class="page px-4 pt-4">
+
+  <!-- Banner -->
+  <div class="offline-banner" id="bannerText">
+    📡 Vous êtes actuellement hors ligne — Mode local activé 🔒
+  </div>
+
+  <div id="alertBanner" class="d-none"></div>
+
+  <div id="summary"
+       class="d-flex flex-wrap justify-content-center gap-2 mb-3 text-center text-muted">
+    Chargement des données locales...
+  </div>
+
+  <!-- 🔍 Filters -->
+  <form class="row g-3 justify-content-center mb-3" id="filterForm" onsubmit="applyFilter(event)">
+    <div class="col-md-4">
+      <input type="text" id="searchInput" class="form-control"
+             placeholder="Rechercher par nom, PN ou LOT" />
+    </div>
+
+    <div class="col-md-3">
+      <select id="statusFilter" class="form-select">
+        <option value="">Tous</option>
+        <option value="valid">Valides</option>
+        <option value="warning">Avertis</option>
+        <option value="expired">Expirés</option>
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <button type="submit" id="filterBtn" class="btn btn-primary w-100">
+        Filtrer
+      </button>
+    </div>
+  </form>
+
+  <!-- Cards Grid -->
+  <div id="lotsContainer" class="row g-3"></div>
+
+  <!-- Pagination -->
+  <nav class="mt-4">
+    <ul id="pagination" class="pagination justify-content-center"></ul>
+  </nav>
+
+</main>
+
+<!-- Bootstrap JS (ضروري باش يخدم dropdown) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 🌐 Language Engine (inline LANG object) -->
+<script>
+const LANG = {
+  ar: {
+    offline: "📡 أنت حالياً في وضع عدم الاتصال — الوضع المحلي مُفعل 🔒",
+    search: "ابحث بالاسم أو PN أو رقم LOT",
+    filter: "تصفية",
+    total: "المجموع",
+    valid: "صالح",
+    warning: "تحذير",
+    expired: "منتهي",
+    pn: "PN",
+    lot: "الدفعة",
+    expiry: "تاريخ الصلاحية",
+    type: "النوع",
+    noData: "لا توجد بيانات محلية.",
+    loading: "جارٍ تحميل البيانات المحلية...",
+    status_all: "الكل",
+    status_valid: "صالحة",
+    status_warning: "تحذير",
+    status_expired: "منتهية",
+    expiredAlert: (n)=> `⚠️ ${n === 1
+        ? "منتج واحد منتهي الصلاحية!"
+        : n + " منتجات منتهية الصلاحية!"}`
+  },
+  fr: {
+    offline: "📡 Vous êtes actuellement hors ligne — Mode local activé 🔒",
+    search: "Rechercher par nom, PN ou LOT",
+    filter: "Filtrer",
+    total: "Total",
+    valid: "Valides",
+    warning: "Avertis",
+    expired: "Expirés",
+    pn: "PN",
+    lot: "Lot",
+    expiry: "Expiration",
+    type: "Type",
+    noData: "Aucune donnée locale disponible.",
+    loading: "Chargement des données locales...",
+    status_all: "Tous",
+    status_valid: "Valides",
+    status_warning: "Avertis",
+    status_expired: "Expirés",
+    expiredAlert: (n)=> `⚠️ ${n===1
+        ? "Attention ! 1 lot est expiré !"
+        : "Attention ! " + n + " lots ont expiré !" }`
+  },
+  en: {
+    offline: "📡 You are currently offline — Local mode active 🔒",
+    search: "Search by name, PN or LOT",
+    filter: "Filter",
+    total: "Total",
+    valid: "Valid",
+    warning: "Warning",
+    expired: "Expired",
+    pn: "PN",
+    lot: "Lot",
+    expiry: "Expiry",
+    type: "Type",
+    noData: "No local data available.",
+    loading: "Loading local data...",
+    status_all: "All",
+    status_valid: "Valid",
+    status_warning: "Warning",
+    status_expired: "Expired",
+    expiredAlert: (n)=> `⚠️ ${n===1
+        ? "Warning! 1 lot has expired!"
+        : "Warning! " + n + " lots have expired!"}`
+  }
+};
+
+let lang = localStorage.getItem("vf_lang") || "fr";
+
+function applyLanguage(){
+  const t = LANG[lang] || LANG.fr;
+
+  // Banner + labels
+  document.getElementById("bannerText").textContent = t.offline;
+  document.getElementById("searchInput").placeholder = t.search;
+  document.getElementById("filterBtn").textContent = t.filter;
+
+  document.getElementById("offlineLabel").textContent =
+    (lang === "ar" ? "وضع دون اتصال" :
+     lang === "en" ? "Offline Mode" : "Mode Hors Ligne");
+
+  // Summary initial text (غير ملي مازال ما تحمّلتش الداتا)
+  const summary = document.getElementById("summary");
+  if (summary && !summary.dataset.loaded) {
+    summary.textContent = t.loading;
+  }
+
+  // 🔁 ترجمة Status filter
+  const st = document.getElementById("statusFilter");
+  if (st && st.options.length >= 4) {
+    st.options[0].textContent = t.status_all;
+    st.options[1].textContent = t.status_valid;
+    st.options[2].textContent = t.status_warning;
+    st.options[3].textContent = t.status_expired;
+  }
+
+  // RTL / LTR
+  if(lang === "ar"){
+    document.body.style.direction = "rtl";
+    document.body.style.textAlign = "right";
+  } else {
+    document.body.style.direction = "ltr";
+    document.body.style.textAlign = "left";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", applyLanguage);
+
+document.querySelectorAll(".lang-option").forEach(el=>{
+  el.addEventListener("click", ()=>{
+    lang = el.dataset.lang;
+    localStorage.setItem("vf_lang", lang);
+    applyLanguage();
+    loadLocalLots();   // باش summary و alert يتبدلو حتى هما
+  });
+});
+</script>
+
+<!-- ⚙️ IndexedDB + Pagination + Cards Logic -->
+<script>
+/* === IndexedDB === */
+const DB_NAME = "vigifroid-db";
+const PER_PAGE = 12;
+let lotsCache = [];
+let currentPage = 1;
+
+async function openDB(){
+  return new Promise((res,rej)=>{
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onupgradeneeded = (e)=>{
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains("lots"))
+        db.createObjectStore("lots", { keyPath: "id" });
+      if (!db.objectStoreNames.contains("pending-operations"))
+        db.createObjectStore("pending-operations", { keyPath: "id", autoIncrement: true });
+      if (!db.objectStoreNames.contains("logs"))
+        db.createObjectStore("logs", { keyPath: "timestamp" });
+    };
+    r.onsuccess = ()=>res(r.result);
+    r.onerror   = ()=>rej(r.error);
+  });
+}
+
+async function getLots(){
+  const db=await openDB();
+  return new Promise((res,rej)=>{
+    const tx=db.transaction("lots","readonly");
+    const store=tx.objectStore("lots");
+    const rq=store.getAll();
+    rq.onsuccess=()=>res(rq.result||[]);
+    rq.onerror=()=>rej(rq.error);
+  });
+}
+
+/* === Status computation === */
+const MS_PER_DAY = 86400000;
+
+function todayIndex() {
+  const now = new Date();
+  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.floor(t.getTime() / MS_PER_DAY);
+}
+function parseYMD(ymd) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec((ymd||'').trim());
+  if (!m) return null;
+  const d = new Date(+m[1], +m[2]-1, +m[3]);
+  return Math.floor(d.getTime() / MS_PER_DAY);
+}
+function computeStatus(dStr) {
+  const t = todayIndex();
+  const di = parseYMD(dStr);
+  if (di === null) return 'unknown';
+  if (di < t) return 'expired';
+  if (di - t <= 30) return 'warning';
+  return 'valid';
+}
+function daysLeft(dStr){
+  const t = todayIndex(), di = parseYMD(dStr);
+  if (di === null) return '—';
+  const diff = di - t;
+  return (isNaN(diff) || diff < 0) ? '0' : (diff + 'd');
+}
+
+/* === Build card === */
+function buildLotCard(lot){
+  const s = computeStatus(lot.expiry_date);
+  const imgSrc = lot.image ? `/static/images/${lot.image}` : `/static/images/vigifroid_icon.png`;
+  const t = LANG[lang] || LANG.fr;
+
+  return `
+  <div class="col-md-6 col-lg-4">
+    <div class="card lot-card ${s}" data-expiry="${lot.expiry_date||''}">
+      <div class="card-body position-relative">
+        <span class="badge rounded-pill position-absolute top-0 end-0 bg-secondary days-badge">${daysLeft(lot.expiry_date)}</span>
+        <div class="image-wrap mb-3 text-center">
+          <img class="img-fluid lot-image" src="${imgSrc}" alt="${lot.product_name||'-'}" loading="lazy"
+               onerror="this.onerror=null;this.src='/static/images/vigifroid_icon.png';" />
+        </div>
+        <h5 class="card-title text-truncate">${lot.product_name||'-'}</h5>
+        <p class="card-text">
+          <strong>${t.pn}:</strong> ${lot.pn||'-'}<br>
+          <strong>${t.lot}:</strong> ${lot.lot_number||'-'}<br>
+          <strong>${t.expiry}:</strong> ${lot.expiry_date||'-'}<br>
+          <strong>${t.type}:</strong> <span class="badge bg-secondary">${lot.type||'-'}</span>
+        </p>
+        <div class="status-bar mb-3 ${s}">
+          <span class="status-text">${s.toUpperCase()}</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* === Pagination === */
+function renderPagination(total){
+  const pageCount = Math.ceil(total / PER_PAGE);
+  const pag = document.getElementById("pagination");
+  if(pageCount <= 1){ pag.innerHTML=""; return; }
+
+  let html="";
+  for(let i=1;i<=pageCount;i++){
+    html += `<li class="page-item ${i===currentPage?'active':''}">
+      <a class="page-link" href="#" onclick="changePage(${i});return false;">${i}</a>
+    </li>`;
+  }
+  pag.innerHTML = html;
+}
+
+function changePage(page){
+  currentPage = page;
+  renderLots();
+  renderPagination(filteredLots.length);
+}
+
+/* === Update badge days === */
+function updateBadges(){
+  document.querySelectorAll(".lot-card").forEach(card=>{
+    const badge = card.querySelector(".days-badge");
+    if (!badge) return;
+    badge.textContent = daysLeft(card.dataset.expiry || "");
+  });
+}
+
+function scheduleMidnightRefresh(){
+  const now = new Date();
+  const nextMidnight = new Date(
+    now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0
+  );
+  const ms = nextMidnight.getTime() - now.getTime();
+  setTimeout(()=>{ updateBadges(); setInterval(updateBadges, 86400000); }, ms);
+}
+
+/* === Render lots + alert === */
+let filteredLots=[];
+async function loadLocalLots(){
+  const cont    = document.getElementById("lotsContainer");
+  const summary = document.getElementById("summary");
+  const banner  = document.getElementById("alertBanner");
+  const t       = LANG[lang] || LANG.fr;
+
+  const lots = await getLots();
+  lotsCache = lots;
+
+  if(!lots.length){
+    cont.innerHTML = `<p class='text-danger text-center'>${t.noData}</p>`;
+    summary.innerHTML = `<span class='badge bg-danger'>0 ${t.total}</span>`;
+    summary.dataset.loaded = "1";
+    banner.classList.add("d-none");
+    return;
+  }
+
+  const valid = lots.filter(l => computeStatus(l.expiry_date) === "valid").length;
+  const warn  = lots.filter(l => computeStatus(l.expiry_date) === "warning").length;
+  const exp   = lots.filter(l => computeStatus(l.expiry_date) === "expired").length;
+
+  summary.innerHTML = `
+    <span class="badge bg-light text-dark"><strong>${lots.length}</strong> ${t.total}</span>
+    <span class="badge bg-success">✅ ${valid} ${t.valid}</span>
+    <span class="badge bg-warning text-dark">⏳ ${warn} ${t.warning}</span>
+    <span class="badge bg-danger">⛔ ${exp} ${t.expired}</span>`;
+  summary.dataset.loaded = "1";
+
+  banner.innerHTML = "";
+  if(exp > 0){
+    banner.classList.remove("d-none");
+    banner.className = "alert alert-danger text-center alert-futuristic mb-3";
+    banner.textContent = t.expiredAlert(exp);
+  } else {
+    banner.classList.add("d-none");
+  }
+
+  filteredLots = [...lotsCache];
+  renderLots();
+  renderPagination(filteredLots.length);
+}
+
+/* === Render visible lots per page === */
+function renderLots(){
+  const cont=document.getElementById("lotsContainer");
+  const start=(currentPage-1)*PER_PAGE;
+  const end=start+PER_PAGE;
+  const visible = filteredLots.slice(start,end);
+  cont.innerHTML = visible.map(buildLotCard).join("");
+  updateBadges();
+}
+
+/* === Filter === */
+function applyFilter(e){
+  e.preventDefault();
+  const q=document.getElementById("searchInput").value.toLowerCase().trim();
+  const st=document.getElementById("statusFilter").value;
+  currentPage=1;
+  filteredLots=lotsCache.filter(l=>{
+    const matchQ=!q || (l.product_name||"").toLowerCase().includes(q)
+      || (l.pn||"").toLowerCase().includes(q)
+      || (l.lot_number||"").toLowerCase().includes(q);
+    const matchSt = !st || computeStatus(l.expiry_date) === st;
+
+    return matchQ && matchSt;
+  });
+  renderLots();
+  renderPagination(filteredLots.length);
+}
+
+/* === Auto-reconnexion === */
+window.addEventListener("online",()=>{
+  const last = localStorage.getItem("vf_last_page") || "/";
+  location.href=last;
+});
+document.addEventListener("DOMContentLoaded",()=>{
+  loadLocalLots();
+  scheduleMidnightRefresh();
+});
+</script>
+
+</body>
+</html>

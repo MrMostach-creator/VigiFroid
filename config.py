@@ -27,10 +27,17 @@ class Config:
     REMEMBER_COOKIE_DURATION = timedelta(days=7)
 
     # ── DB (PostgreSQL) ─────────────────────────────────
+    _raw_db_url = os.environ.get("DATABASE_URL")
+
+    # 🔧 (جديد) تصحيح prefix ديال postgres:// اللي كيعطيه Render
+    if _raw_db_url and _raw_db_url.startswith("postgres://"):
+        _raw_db_url = _raw_db_url.replace("postgres://", "postgresql+psycopg2://", 1)
+
     SQLALCHEMY_DATABASE_URI = (
-        os.environ.get("DATABASE_URL")
+        _raw_db_url
         or "postgresql+psycopg2://postgres:loni@localhost:5432/vigifroid_db"
     )
+
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_size": 10,
         "pool_timeout": 30,

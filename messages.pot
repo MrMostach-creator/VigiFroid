@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-21 23:27+0100\n"
+"POT-Creation-Date: 2025-12-24 22:53+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -205,31 +205,31 @@ msgstr ""
 msgid "Choose the language of the exported report (PDF/CSV)."
 msgstr ""
 
-#: templates/export_settings.html:96
+#: templates/export_settings.html:97
 msgid "💾 Save"
 msgstr ""
 
-#: templates/export_settings.html:104
+#: templates/export_settings.html:105
 msgid "Auto-export"
 msgstr ""
 
-#: templates/export_settings.html:106
+#: templates/export_settings.html:107
 msgid "Enabled"
 msgstr ""
 
-#: templates/export_settings.html:108
+#: templates/export_settings.html:109
 msgid "Disabled"
 msgstr ""
 
-#: templates/export_settings.html:113
+#: templates/export_settings.html:114
 msgid "Current email"
 msgstr ""
 
-#: templates/export_settings.html:118
+#: templates/export_settings.html:119
 msgid "Day of month"
 msgstr ""
 
-#: templates/export_settings.html:123
+#: templates/export_settings.html:124
 msgid "Format"
 msgstr ""
 
@@ -275,8 +275,8 @@ msgid "Total"
 msgstr ""
 
 #: templates/index.html:64 templates/index.html:80 templates/index.html:157
-#: vigi/lots/routes.py:482 vigi/services/reports.py:72
-#: vigi/services/reports.py:179
+#: vigi/lots/routes.py:481 vigi/services/reports.py:112
+#: vigi/services/reports.py:207
 msgid "Valid"
 msgstr ""
 
@@ -285,8 +285,8 @@ msgid "Warning (<30d)"
 msgstr ""
 
 #: templates/index.html:66 templates/index.html:82 templates/index.html:159
-#: vigi/lots/routes.py:480 vigi/services/reports.py:68
-#: vigi/services/reports.py:175
+#: vigi/lots/routes.py:479 vigi/services/reports.py:108
+#: vigi/services/reports.py:201
 msgid "Expired"
 msgstr ""
 
@@ -298,8 +298,8 @@ msgstr ""
 msgid "All"
 msgstr ""
 
-#: templates/index.html:81 templates/index.html:158 vigi/lots/routes.py:481
-#: vigi/services/reports.py:70 vigi/services/reports.py:177
+#: templates/index.html:81 templates/index.html:158 vigi/lots/routes.py:480
+#: vigi/services/reports.py:110 vigi/services/reports.py:204
 msgid "Warning"
 msgstr ""
 
@@ -579,49 +579,49 @@ msgstr ""
 msgid "Please choose a day between 1 and 28."
 msgstr ""
 
-#: vigi/lots/routes.py:315
+#: vigi/lots/routes.py:314
 msgid "Settings updated successfully."
 msgstr ""
 
-#: vigi/lots/routes.py:355 vigi/lots/routes.py:474 vigi/services/reports.py:55
-#: vigi/services/reports.py:164
+#: vigi/lots/routes.py:354 vigi/lots/routes.py:473 vigi/services/reports.py:95
+#: vigi/services/reports.py:186
 msgid "Product Name"
 msgstr ""
 
-#: vigi/lots/routes.py:355 vigi/lots/routes.py:474 vigi/services/reports.py:56
-#: vigi/services/reports.py:165
+#: vigi/lots/routes.py:354 vigi/lots/routes.py:473 vigi/services/reports.py:96
+#: vigi/services/reports.py:187
 msgid "PN"
 msgstr ""
 
-#: vigi/lots/routes.py:355 vigi/lots/routes.py:474 vigi/services/reports.py:57
-#: vigi/services/reports.py:166
+#: vigi/lots/routes.py:354 vigi/lots/routes.py:473 vigi/services/reports.py:97
+#: vigi/services/reports.py:188
 msgid "Lot Number"
 msgstr ""
 
-#: vigi/lots/routes.py:356 vigi/lots/routes.py:474 vigi/services/reports.py:58
-#: vigi/services/reports.py:167
+#: vigi/lots/routes.py:355 vigi/lots/routes.py:473 vigi/services/reports.py:98
+#: vigi/services/reports.py:189
 msgid "Expiry Date"
 msgstr ""
 
-#: vigi/lots/routes.py:356 vigi/lots/routes.py:474 vigi/services/reports.py:59
-#: vigi/services/reports.py:168
+#: vigi/lots/routes.py:355 vigi/lots/routes.py:473 vigi/services/reports.py:99
+#: vigi/services/reports.py:190
 msgid "Product Type"
 msgstr ""
 
-#: vigi/lots/routes.py:470 vigi/services/reports.py:160
+#: vigi/lots/routes.py:469 vigi/services/reports.py:182
 msgid "VigiFroid Lots Report"
 msgstr ""
 
-#: vigi/lots/routes.py:474 vigi/services/reports.py:60
-#: vigi/services/reports.py:169
+#: vigi/lots/routes.py:473 vigi/services/reports.py:100
+#: vigi/services/reports.py:191
 msgid "Status"
 msgstr ""
 
-#: vigi/services/reports.py:265
+#: vigi/services/reports.py:317
 msgid "VigiFroid · Monthly lots report"
 msgstr ""
 
-#: vigi/services/reports.py:266
+#: vigi/services/reports.py:318
 msgid "Please find attached the monthly lots export from VigiFroid."
 msgstr ""
 

@@ -3,14 +3,14 @@ DROP TABLE IF EXISTS lots;
 DROP TABLE IF EXISTS logs;
 
 CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY,
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL
 );
 
 CREATE TABLE lots (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY,
     product_name TEXT NOT NULL,
     lot_number TEXT NOT NULL,
     expiry_date DATE NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE lots (
 );
 
 CREATE TABLE logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY,
     action TEXT NOT NULL,
     username TEXT NOT NULL,
     timestamp TEXT NOT NULL

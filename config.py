@@ -14,7 +14,7 @@ class Config:
     BABEL_DEFAULT_LOCALE = "fr"
     BABEL_DEFAULT_TIMEZONE = "Africa/Casablanca"
     BABEL_TRANSLATION_DIRECTORIES = str(BASE_DIR / "translations")
-    ASSET_VERSION = "v2.4.2"
+    ASSET_VERSION = "v2.4.3"
 
     # ── Security / Sessions ──────────────────────────────
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-vigifroid-keep-this-constant")

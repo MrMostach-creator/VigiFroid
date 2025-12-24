@@ -10,8 +10,8 @@ from flask import (
 from flask_login import login_required, current_user
 from functools import wraps
 from vigi.extensions import db, cache
-from models import Lot, Log
-from vigi.forms import LotForm
+from models import Lot, Log, AppSettings 
+from vigi.forms import LotForm, AppSettingsForm
 from datetime import datetime, timedelta
 import csv
 import io
@@ -261,6 +261,61 @@ def delete_lot(lot_id):
     resp.headers["Pragma"] = "no-cache"
     resp.headers["Expires"] = "0"
     return resp
+
+# ────────────────────────────────
+# إعدادات التصدير الشهري (Admin فقط)
+# ────────────────────────────────
+@lots_bp.route("/export-settings", methods=["GET", "POST"])
+@login_required
+@admin_required
+def export_settings():
+    settings = AppSettings.get()
+    form = AppSettingsForm(obj=settings)
+
+    if form.validate_on_submit():
+        enabled = bool(form.export_enabled.data)
+        email_value = (form.export_email.data or "").strip() or None
+        day_value = form.export_day.data
+        fmt_value = (form.export_format.data or "pdf").lower()
+
+        # ✅ الجديد: اللغة (لازم تكون هنا قبل if ديال allowed_langs)
+        lang_value = (form.report_language.data or settings.report_language or "fr").strip().lower()
+        allowed_langs = {"ar", "fr", "en"}
+        if lang_value not in allowed_langs:
+            lang_value = settings.report_language or "fr"
+
+        allowed_formats = {"pdf", "csv"}
+        if fmt_value not in allowed_formats:
+            fmt_value = "pdf"
+
+        if enabled:
+            if not email_value:
+                flash(_("Please enter a quality manager email if auto-export is enabled."), "error")
+                return render_template("export_settings.html", form=form, settings=settings)
+
+            if not day_value:
+                flash(_("Please choose the day of the month for auto-export."), "error")
+                return render_template("export_settings.html", form=form, settings=settings)
+
+            if not (1 <= int(day_value) <= 28):
+                flash(_("Please choose a day between 1 and 28."), "error")
+                return render_template("export_settings.html", form=form, settings=settings)
+
+            settings.quality_email = email_value
+            settings.export_day = int(day_value)
+            settings.export_format = fmt_value
+
+        # ✅ أنا كنفضّل نخزّن اللغة حتى وهو OFF باش تبقى محفوظة
+        settings.report_language = lang_value
+        settings.auto_export_enabled = enabled
+        db.session.add(settings)
+        db.session.commit()
+
+        flash(_("Settings updated successfully."), "success")
+        return redirect(url_for("lots.export_settings"))
+
+
+    return render_template("export_settings.html", form=form, settings=settings)
 
 # ────────────────────────────────
 # تصدير إلى CSV

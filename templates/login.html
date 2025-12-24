@@ -3,19 +3,53 @@
 {% block title %}VigiFroid · {{ _('Login') }}{% endblock %}
 {% set page_class = "page login-page" %}
 
+{# ⭐ ستايل خاص بهاد الصفحة فقط (أنيميشن للترحيب) #}
+{% block styles %}
+  {{ super() }}
+  <style>
+    .brand-hero-anim-title {
+      opacity: 0;
+      animation: heroFadeDown 0.6s ease-out forwards;
+    }
+
+    .brand-hero-anim-subtitle {
+      opacity: 0;
+      animation: heroFadeUp 0.6s ease-out 0.15s forwards;
+    }
+
+    @keyframes heroFadeDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes heroFadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-center align-items-center" style="min-height: 100vh; padding: 20px;">
   <div class="card w-100 shadow-sm" style="max-width: 400px;">
     <div class="card-body text-center">
 
       <div class="brand-hero mb-3">
-        <img class="brand-icon img-fluid rounded-circle"
-             src="{{ url_for('static', filename='images/vigifroid_icon.png') }}"
-             alt="VigiFroid Logo"
-             style="max-height: 100px;">
+        <h1 class="h4 mb-1 brand-hero-anim-title">{{ _('Welcome admin') }}</h1>
+        <p class="text-muted small mb-0 brand-hero-anim-subtitle">{{ _('Please log in to continue') }}</p>
       </div>
-
-
 
       <form method="post" action="{{ url_for('auth.login') }}" oninput="validate()">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
@@ -68,6 +102,21 @@
 
 {% block scripts %}
 <script>
+  // 🔁 توجيه أول زيارة إلى شاشة الترحيب / onboarding
+  (function () {
+    try {
+      // إذا مازال المستخدم ما دارش onboarding فهاد الجهاز
+      if (!localStorage.getItem('vf_onboarding_done')) {
+        // نتأكد أننا ماشي أصلاً فصفحة welcome (لتفادي loop)
+        if (!window.location.pathname.includes('welcome')) {
+          window.location.href = "{{ url_for('auth.welcome') }}";
+        }
+      }
+    } catch (e) {
+      // فحالة المتصفح ما كيدعمش localStorage، نخليه يكمل عادي للّوجين
+    }
+  })();
+
   function togglePwd() {
     const passwordInput = document.getElementById('password');
     const toggleButton = document.querySelector('.password-toggle-btn');

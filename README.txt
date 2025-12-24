@@ -55,8 +55,8 @@ Open `[invalid url, do not cite] in your browser.
 
 Login
 
-Username: admin
-Password: admin
+Username: **********
+Password: *********
 
 
 

@@ -86,7 +86,7 @@
 
               newWorker.addEventListener("statechange", () => {
                 if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                  if (confirm("تحديث جديد متاح لـ VigiFroid! هل تريد إعادة تحميل الصفحة لتطبيقه؟")) {
+                  if (confirm("{{ _('A new update is available for VigiFroid! Do you want to reload the page to apply it?') }}")) {
                     window.location.reload();
                   }
                 }
@@ -95,19 +95,26 @@
           })
           .catch(err => {
             console.error("❌ SW registration failed:", err);
-            let msg = "⚠️ فشل تحميل التطبيق في وضع عدم الاتصال.";
+
+            // 🔤 هاد الرسالة كاملة ولاّت قابلة للترجمة
+            let msg = "{{ _('⚠️ Failed to load the application in offline mode.') }}";
+
             if (String(err.message || "").includes("NetworkError")) {
-              msg += " تحقق من الاتصال بالإنترنت.";
+              msg += " {{ _('Please check your internet connection.') }}";
             } else if (String(err.message || "").includes("404")) {
-              msg += " الملف service-worker.js غير موجود.";
+              msg += " {{ _('The file service-worker.js was not found.') }}";
             }
+
             alert(msg);
           });
       });
     } else {
-      console.warn("⚠️ Service Workers غير مدعوم في هذا المتصفح.");
+      // 🔤 حتى رسالة عدم دعم Service Workers ولاّت بـ gettext
+      console.warn("{{ _('⚠️ Service Workers are not supported in this browser.') }}");
     }
   </script>
+    {# 👇 هذا البلوك اللي يسمح للصفحات بحال welcome تضيف CSS خاص بها #}
+  {% block styles %}{% endblock %}
 </head>
 
 <body class="bg-brand 
@@ -193,6 +200,7 @@
               {% if current_user.is_authenticated and current_user.role == 'admin' %}
               <a href="{{ url_for('lots.add_lot') }}">{{ _('Add') }}</a>
               <a href="{{ url_for('logs.logs') }}">{{ _('Logs') }}</a>
+              <a href="{{ url_for('lots.export_settings') }}">{{ _('Export settings') }}</a>
               {% endif %}
             </div>
           </div>
@@ -292,3 +300,4 @@
 </body>
 
 </html>
+

@@ -10,25 +10,28 @@
   "lang": "fr",
   "description": "Application de suivi et gestion des lots VigiFroid",
   "icons": [
-    {
-      "src": "/static/images/android-chrome-192x192_vigifroid.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/static/images/android-chrome-512x512_vigifroid.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    },
-    {
-      "src": "/static/images/favicon-32x32_vigifroid.png",
-      "sizes": "32x32",
-      "type": "image/png"
-    },
-    {
-      "src": "/static/images/favicon-16x16_vigifroid.png",
-      "sizes": "16x16",
-      "type": "image/png"
-    }
-  ]
+  {
+    "src": "/static/images/android-chrome-192x192_vigifroid.png",
+    "sizes": "192x192",
+    "type": "image/png",
+    "purpose": "any maskable"
+  },
+  {
+    "src": "/static/images/android-chrome-512x512_vigifroid.png",
+    "sizes": "512x512",
+    "type": "image/png",
+    "purpose": "any maskable"
+  },
+  {
+    "src": "/static/images/favicon-32x32_vigifroid.png",
+    "sizes": "32x32",
+    "type": "image/png"
+  },
+  {
+    "src": "/static/images/favicon-16x16_vigifroid.png",
+    "sizes": "16x16",
+    "type": "image/png"
+  }
+]
+
 }

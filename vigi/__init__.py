@@ -140,4 +140,12 @@ def create_app(config_class="config.Config"):
     except Exception as e:
         app.logger.warning(f"logs blueprint not registered: {e}")
 
+    # ✅ Register CLI commands (autoexport)
+    try:
+        from vigi.cli_autoexport import register_cli
+        register_cli(app)
+        app.logger.info("✅ CLI autoexport registered")
+    except Exception as e:
+        app.logger.warning(f"CLI autoexport not registered: {e}")
+
     return app

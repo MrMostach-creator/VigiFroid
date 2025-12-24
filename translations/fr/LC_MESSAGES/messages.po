@@ -1,13 +1,17 @@
-# French translations for PROJECT.
+# French translations for VigiFroid.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the VigiFroid project.
+# YOUR NAME <YOUR.EMAIL@DOMAIN>, 2025.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-29 21:59+0100\n"
-"PO-Revision-Date: 2025-11-28 23:40+0100\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Project-Id-Version: VigiFroid 1.0\n"
+"Report-Msgid-Bugs-To: support@domain.com\n"
+"POT-Creation-Date: 2025-12-21 23:27+0100\n"
+"PO-Revision-Date: 2025-12-21 23:45+0100\n"
+"Last-Translator: YOUR NAME <YOUR.EMAIL@DOMAIN>\n"
 "Language: fr\n"
-"Language-Team: fr <LL@li.org>\n"
+"Language-Team: French <fr@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -20,7 +24,7 @@ msgstr "Accès refusé"
 
 #: templates/403.html:11
 msgid "You do not have permission to access this page."
-msgstr "Vous n'avez pas l'autorisation d'accéder à cette page."
+msgstr "Vous n'avez pas la permission d'accéder à cette page."
 
 #: templates/403.html:14 templates/404.html:14
 msgid "Back to Home"
@@ -28,7 +32,7 @@ msgstr "Retour à l'accueil"
 
 #: templates/404.html:4 templates/404.html:9
 msgid "Page not found"
-msgstr "Page introuvable"
+msgstr "Page non trouvée"
 
 #: templates/404.html:11
 msgid "Sorry, the page you are looking for doesn't exist or has been moved."
@@ -44,7 +48,7 @@ msgid ""
 "and is working on it."
 msgstr ""
 "Une erreur inattendue s'est produite sur le serveur. Notre équipe a été "
-"avertie et travaille dessus."
+"prévenue et travaille à sa résolution."
 
 #: templates/500.html:14
 msgid "Try again"
@@ -54,11 +58,11 @@ msgstr "Réessayer"
 msgid "Add new lot"
 msgstr "Ajouter un nouveau lot"
 
-#: templates/add.html:92 templates/edit.html:98
+#: templates/add.html:85 templates/edit.html:91
 msgid "Save"
 msgstr "Enregistrer"
 
-#: templates/add.html:93 templates/edit.html:99
+#: templates/add.html:86 templates/edit.html:92
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -68,51 +72,79 @@ msgstr "VigiFroid"
 
 #: templates/base.html:13
 msgid "Application de suivi et gestion des lots VigiFroid"
-msgstr "Application de suivi et gestion des lots VigiFroid"
+msgstr "Application de suivi et de gestion des lots VigiFroid"
 
-#: templates/base.html:155
+#: templates/base.html:89
+msgid ""
+"A new update is available for VigiFroid! Do you want to reload the page "
+"to apply it?"
+msgstr ""
+"Une nouvelle mise à jour est disponible pour VigiFroid ! Souhaitez-vous "
+"recharger la page pour l'appliquer ?"
+
+#: templates/base.html:100
+msgid "⚠️ Failed to load the application in offline mode."
+msgstr "⚠️ Échec du chargement de l'application en mode hors ligne."
+
+#: templates/base.html:103
+msgid "Please check your internet connection."
+msgstr "Veuillez vérifier votre connexion internet."
+
+#: templates/base.html:105
+msgid "The file service-worker.js was not found."
+msgstr "Le fichier service-worker.js n'a pas été trouvé."
+
+#: templates/base.html:113
+msgid "⚠️ Service Workers are not supported in this browser."
+msgstr "⚠️ Les Service Workers ne sont pas pris en charge par ce navigateur."
+
+#: templates/base.html:169
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: templates/base.html:158 templates/login.html:3 templates/login.html:60
+#: templates/base.html:172 templates/login.html:3 templates/login.html:94
 msgid "Login"
 msgstr "Connexion"
 
-#: templates/base.html:165
+#: templates/base.html:179
 msgid "Menu"
 msgstr "Menu"
 
-#: templates/base.html:173
+#: templates/base.html:187
 msgid "Language"
 msgstr "Langue"
 
-#: templates/base.html:179
+#: templates/base.html:193
 msgid "Appearance"
 msgstr "Apparence"
 
-#: templates/base.html:180
+#: templates/base.html:194
 msgid "Light"
 msgstr "Clair"
 
-#: templates/base.html:181
+#: templates/base.html:195
 msgid "Dark"
 msgstr "Sombre"
 
-#: templates/base.html:184
+#: templates/base.html:198
 msgid "Navigation"
 msgstr "Navigation"
 
-#: templates/base.html:185
+#: templates/base.html:199
 msgid "Home"
 msgstr "Accueil"
 
-#: templates/base.html:187
+#: templates/base.html:201
 msgid "Add"
 msgstr "Ajouter"
 
-#: templates/base.html:188
+#: templates/base.html:202
 msgid "Logs"
 msgstr "Journaux"
+
+#: templates/base.html:203 templates/export_settings.html:3
+msgid "Export settings"
+msgstr "Paramètres d'export"
 
 #: templates/edit.html:4 templates/edit.html:12
 msgid "Edit lot"
@@ -122,13 +154,89 @@ msgstr "Modifier le lot"
 msgid "Current image:"
 msgstr "Image actuelle :"
 
-#: templates/edit.html:104 templates/index.html:170
+#: templates/edit.html:97 templates/index.html:170
 msgid "Are you sure you want to delete this lot?"
 msgstr "Êtes-vous sûr de vouloir supprimer ce lot ?"
 
-#: templates/edit.html:108 templates/index.html:172
+#: templates/edit.html:101 templates/index.html:172
 msgid "Delete"
 msgstr "Supprimer"
+
+#: templates/export_settings.html:13
+msgid "Monthly export settings"
+msgstr "Paramètres d'export mensuel"
+
+#: templates/export_settings.html:15
+msgid "Configure automatic monthly export of lots report to the quality manager."
+msgstr "Configurer l'export automatique mensuel du rapport des lots vers le responsable qualité."
+
+#: templates/export_settings.html:25
+msgid "Enable monthly export to quality manager"
+msgstr "Activer l'export mensuel vers le responsable qualité"
+
+#: templates/export_settings.html:28
+msgid "When enabled, the report will be sent automatically every month."
+msgstr "Une fois activé, le rapport sera envoyé automatiquement chaque mois."
+
+#: templates/export_settings.html:36
+msgid "Quality manager email"
+msgstr "E-mail du responsable qualité"
+
+#: templates/export_settings.html:39
+msgid "This email will receive the monthly lots report."
+msgstr "Cette adresse recevra le rapport mensuel des lots."
+
+#: templates/export_settings.html:51
+msgid "Day of month for export"
+msgstr "Jour du mois pour l'export"
+
+#: templates/export_settings.html:54
+msgid "The report will be sent once a month on this day (1–28). Recommended: 1."
+msgstr "Le rapport sera envoyé une fois par mois ce jour-là (1–28). Recommandé : 1."
+
+#: templates/export_settings.html:66
+msgid "Report format"
+msgstr "Format du rapport"
+
+#: templates/export_settings.html:69
+msgid "Choose whether the report is sent as PDF or CSV."
+msgstr "Choisissez si le rapport est envoyé en PDF ou CSV."
+
+#: templates/export_settings.html:81
+msgid "Report language"
+msgstr "Langue du rapport"
+
+#: templates/export_settings.html:84
+msgid "Choose the language of the exported report (PDF/CSV)."
+msgstr "Choisissez la langue du rapport exporté (PDF/CSV)."
+
+#: templates/export_settings.html:96
+msgid "💾 Save"
+msgstr "💾 Enregistrer"
+
+#: templates/export_settings.html:104
+msgid "Auto-export"
+msgstr "Export auto"
+
+#: templates/export_settings.html:106
+msgid "Enabled"
+msgstr "Activé"
+
+#: templates/export_settings.html:108
+msgid "Disabled"
+msgstr "Désactivé"
+
+#: templates/export_settings.html:113
+msgid "Current email"
+msgstr "E-mail actuel"
+
+#: templates/export_settings.html:118
+msgid "Day of month"
+msgstr "Jour du mois"
+
+#: templates/export_settings.html:123
+msgid "Format"
+msgstr "Format"
 
 #: templates/forgot_password.html:4
 msgid "Forgot Password"
@@ -146,15 +254,15 @@ msgstr ""
 "Saisissez votre adresse e-mail et nous vous enverrons un lien pour "
 "réinitialiser votre mot de passe."
 
-#: templates/forgot_password.html:29
+#: templates/forgot_password.html:27
 msgid "Email address"
 msgstr "Adresse e-mail"
 
-#: templates/forgot_password.html:33
+#: templates/forgot_password.html:31
 msgid "Send reset link"
 msgstr "Envoyer le lien de réinitialisation"
 
-#: templates/forgot_password.html:39 templates/reset_password.html:41
+#: templates/forgot_password.html:37 templates/reset_password.html:41
 msgid "Back to Login"
 msgstr "Retour à la connexion"
 
@@ -166,24 +274,26 @@ msgstr "Lots"
 #, python-format
 msgid "Warning! %(num)s lot has expired!"
 msgid_plural "Warning! %(num)s lots have expired!"
-msgstr[0] "Attention ! %(num)s lot a expiré !"
-msgstr[1] "Attention ! %(num)s lots ont expiré !"
+msgstr[0] "Attention ! %(num)s lot est expiré !"
+msgstr[1] "Attention ! %(num)s lots sont expirés !"
 
 #: templates/index.html:63
 msgid "Total"
 msgstr "Total"
 
 #: templates/index.html:64 templates/index.html:80 templates/index.html:157
-#: vigi/lots/routes.py:426
+#: vigi/lots/routes.py:482 vigi/services/reports.py:72
+#: vigi/services/reports.py:179
 msgid "Valid"
 msgstr "Valide"
 
 #: templates/index.html:65
 msgid "Warning (<30d)"
-msgstr "Avertissement (<30 j)"
+msgstr "Attention (<30j)"
 
 #: templates/index.html:66 templates/index.html:82 templates/index.html:159
-#: vigi/lots/routes.py:424
+#: vigi/lots/routes.py:480 vigi/services/reports.py:68
+#: vigi/services/reports.py:175
 msgid "Expired"
 msgstr "Expiré"
 
@@ -195,9 +305,10 @@ msgstr "Rechercher par nom, PN ou numéro de lot"
 msgid "All"
 msgstr "Tous"
 
-#: templates/index.html:81 templates/index.html:158 vigi/lots/routes.py:425
+#: templates/index.html:81 templates/index.html:158 vigi/lots/routes.py:481
+#: vigi/services/reports.py:70 vigi/services/reports.py:177
 msgid "Warning"
-msgstr "Avertissement"
+msgstr "Attention"
 
 #: templates/index.html:95
 msgid "Filter"
@@ -231,23 +342,31 @@ msgstr "Type"
 msgid "Edit"
 msgstr "Modifier"
 
-#: templates/login.html:30
+#: templates/login.html:50
+msgid "Welcome admin"
+msgstr "Bienvenue administrateur"
+
+#: templates/login.html:51
+msgid "Please log in to continue"
+msgstr "Veuillez vous connecter pour continuer"
+
+#: templates/login.html:64
 msgid "Username"
 msgstr "Nom d'utilisateur"
 
-#: templates/login.html:40
+#: templates/login.html:74
 msgid "Password"
 msgstr "Mot de passe"
 
-#: templates/login.html:44 templates/login.html:78
+#: templates/login.html:78 templates/login.html:127
 msgid "Show"
 msgstr "Afficher"
 
-#: templates/login.html:52
+#: templates/login.html:86
 msgid "Forgot password?"
 msgstr "Mot de passe oublié ?"
 
-#: templates/login.html:78
+#: templates/login.html:127
 msgid "Hide"
 msgstr "Masquer"
 
@@ -275,7 +394,7 @@ msgstr "Aucun journal disponible"
 msgid "Reset Password"
 msgstr "Réinitialiser le mot de passe"
 
-#: templates/reset_password.html:17 vigi/auth/routes.py:101
+#: templates/reset_password.html:17 vigi/auth/routes.py:160
 msgid "Reset password"
 msgstr "Réinitialiser le mot de passe"
 
@@ -291,11 +410,83 @@ msgstr "Confirmer le mot de passe"
 msgid "Update password"
 msgstr "Mettre à jour le mot de passe"
 
-#: vigi/auth/routes.py:78
+#: templates/welcome.html:3
+msgid "Welcome"
+msgstr "Bienvenue"
+
+#: templates/welcome.html:20
+msgid "Welcome to"
+msgstr "Bienvenue sur"
+
+#: templates/welcome.html:23
+msgid "Internal application for monitoring and tracing refrigerated lots."
+msgstr "Application interne de suivi et traçabilité des lots frigorifiques."
+
+#: templates/welcome.html:32
+msgid ""
+"We will first save your professional email address to secure your access "
+"(password reset, notifications, etc.)."
+msgstr ""
+"Nous allons d'abord enregistrer votre adresse e-mail professionnelle pour sécuriser votre accès "
+"(réinitialisation de mot de passe, notifications, etc.)."
+
+#: templates/welcome.html:36
+msgid "Continue"
+msgstr "Continuer"
+
+#: templates/welcome.html:48
+msgid "E-mail address"
+msgstr "Adresse e-mail"
+
+#: templates/welcome.html:57
+msgid ""
+"This address will be used to secure your account (password reset, "
+"notifications...)."
+msgstr ""
+"Cette adresse sera utilisée pour sécuriser votre compte (réinitialisation de mot de passe, "
+"notifications...)."
+
+#: templates/welcome.html:64
+msgid "I agree to use VigiFroid only within the internal professional context."
+msgstr "J'accepte d'utiliser VigiFroid uniquement dans le cadre professionnel interne."
+
+#: templates/welcome.html:69
+msgid "Validate and continue"
+msgstr "Valider et continuer"
+
+#: templates/welcome.html:136
+msgid "Please confirm your agreement before continuing."
+msgstr "Veuillez confirmer votre accord avant de continuer."
+
+#: vigi/auth/routes.py:55
+msgid "Please enter your email address."
+msgstr "Veuillez saisir votre adresse e-mail."
+
+#: vigi/auth/routes.py:63
+msgid "This email is not registered. Please contact the administrator."
+msgstr "Cet e-mail n'est pas enregistré. Veuillez contacter l'administrateur."
+
+#: vigi/auth/routes.py:68
+msgid "Welcome! You can now log in with your credentials."
+msgstr "Bienvenue ! Vous pouvez maintenant vous connecter avec vos identifiants."
+
+#: vigi/auth/routes.py:89
+msgid "✅ Login successful."
+msgstr "✅ Connexion réussie."
+
+#: vigi/auth/routes.py:93
+msgid "❌ Invalid username or password."
+msgstr "❌ Nom d'utilisateur ou mot de passe incorrect."
+
+#: vigi/auth/routes.py:104
+msgid "✅ Logged out successfully."
+msgstr "✅ Déconnexion réussie."
+
+#: vigi/auth/routes.py:137
 msgid "VigiFroid · Password reset"
 msgstr "VigiFroid · Réinitialisation du mot de passe"
 
-#: vigi/auth/routes.py:82
+#: vigi/auth/routes.py:141
 #, python-format
 msgid ""
 "Hello %(username)s,\n"
@@ -314,110 +505,141 @@ msgstr ""
 "\n"
 "%(url)s\n"
 "\n"
-"Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet "
-"e-mail."
+"Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer ce message."
 
-#: vigi/auth/routes.py:93
+#: vigi/auth/routes.py:152
 msgid "Hello"
 msgstr "Bonjour"
 
-#: vigi/auth/routes.py:94
+#: vigi/auth/routes.py:153
 msgid "You requested to reset your VigiFroid password."
 msgstr "Vous avez demandé à réinitialiser votre mot de passe VigiFroid."
 
-#: vigi/auth/routes.py:95
+#: vigi/auth/routes.py:154
 msgid "To choose a new password, click the button below:"
 msgstr "Pour choisir un nouveau mot de passe, cliquez sur le bouton ci-dessous :"
 
-#: vigi/auth/routes.py:105
+#: vigi/auth/routes.py:164
 msgid "If you did not request this, you can ignore this email."
-msgstr ""
-"Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet "
-"e-mail."
+msgstr "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer ce message."
+
+#: vigi/auth/routes.py:197
+msgid "If an account exists with this email, you will receive a reset link."
+msgstr "S'il existe un compte associé à cette adresse, vous recevrez un lien de réinitialisation."
+
+#: vigi/auth/routes.py:211
+msgid "The reset link is invalid or has expired."
+msgstr "Le lien de réinitialisation est invalide ou a expiré."
+
+#: vigi/auth/routes.py:220
+msgid "Password must be at least 8 characters long."
+msgstr "Le mot de passe doit contenir au moins 8 caractères."
+
+#: vigi/auth/routes.py:223
+msgid "Passwords do not match."
+msgstr "Les mots de passe ne correspondent pas."
+
+#: vigi/auth/routes.py:228
+msgid "Your password has been reset. You can now log in."
+msgstr "Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter."
+
+#: vigi/logs/routes.py:21
+msgid "❌ Unauthorized access."
+msgstr "❌ Accès non autorisé."
+
+#: vigi/logs/routes.py:44
+msgid "⚠️ No logs found."
+msgstr "⚠️ Aucun journal trouvé."
 
 #: vigi/lots/routes.py:173
 msgid "Product added successfully."
-msgstr "✅ Produit ajouté avec succès."
+msgstr "Produit ajouté avec succès."
 
 #: vigi/lots/routes.py:182
 msgid "LOT number or PN already exists."
-msgstr "⚠️ Le numéro LOT ou le PN existe déjà."
+msgstr "Le numéro de lot ou PN existe déjà."
 
 #: vigi/lots/routes.py:185
 #, python-format
 msgid "Error while adding: %(err)s"
-msgstr "⚠️ Erreur lors de l’ajout : %(err)s"
+msgstr "Erreur lors de l'ajout : %(err)s"
 
 #: vigi/lots/routes.py:223
 msgid "Product updated successfully."
-msgstr "✏️ Produit mis à jour avec succès."
+msgstr "Produit modifié avec succès."
 
 #: vigi/lots/routes.py:232
 msgid "LOT number or PN already in use."
-msgstr "⚠️ Le numéro LOT ou le PN est déjà utilisé."
+msgstr "Le numéro de lot ou PN est déjà utilisé."
 
 #: vigi/lots/routes.py:235
 #, python-format
 msgid "Error while editing: %(err)s"
-msgstr "⚠️ Erreur lors de la modification : %(err)s"
+msgstr "Erreur lors de la modification : %(err)s"
 
 #: vigi/lots/routes.py:254
 msgid "Product deleted successfully."
-msgstr "🗑️ Produit supprimé avec succès."
+msgstr "Produit supprimé avec succès."
 
 #: vigi/lots/routes.py:257
 #, python-format
 msgid "Error while deleting: %(err)s"
-msgstr "⚠️ Erreur lors de la suppression : %(err)s"
+msgstr "Erreur lors de la suppression : %(err)s"
 
-#: vigi/lots/routes.py:299 vigi/lots/routes.py:418
+#: vigi/lots/routes.py:293
+msgid "Please enter a quality manager email if auto-export is enabled."
+msgstr "Veuillez saisir l'e-mail du responsable qualité si l'export automatique est activé."
+
+#: vigi/lots/routes.py:297
+msgid "Please choose the day of the month for auto-export."
+msgstr "Veuillez choisir le jour du mois pour l'export automatique."
+
+#: vigi/lots/routes.py:301
+msgid "Please choose a day between 1 and 28."
+msgstr "Veuillez choisir un jour entre 1 et 28."
+
+#: vigi/lots/routes.py:315
+msgid "Settings updated successfully."
+msgstr "Paramètres mis à jour avec succès."
+
+#: vigi/lots/routes.py:355 vigi/lots/routes.py:474 vigi/services/reports.py:55
+#: vigi/services/reports.py:164
 msgid "Product Name"
 msgstr "Nom du produit"
 
-#: vigi/lots/routes.py:299 vigi/lots/routes.py:418
+#: vigi/lots/routes.py:355 vigi/lots/routes.py:474 vigi/services/reports.py:56
+#: vigi/services/reports.py:165
 msgid "PN"
 msgstr "PN"
 
-#: vigi/lots/routes.py:299 vigi/lots/routes.py:418
+#: vigi/lots/routes.py:355 vigi/lots/routes.py:474 vigi/services/reports.py:57
+#: vigi/services/reports.py:166
 msgid "Lot Number"
 msgstr "Numéro de lot"
 
-#: vigi/lots/routes.py:300 vigi/lots/routes.py:418
+#: vigi/lots/routes.py:356 vigi/lots/routes.py:474 vigi/services/reports.py:58
+#: vigi/services/reports.py:167
 msgid "Expiry Date"
-msgstr "Date d’expiration"
+msgstr "Date d'expiration"
 
-#: vigi/lots/routes.py:300 vigi/lots/routes.py:418
+#: vigi/lots/routes.py:356 vigi/lots/routes.py:474 vigi/services/reports.py:59
+#: vigi/services/reports.py:168
 msgid "Product Type"
-msgstr "Type du produit"
+msgstr "Type de produit"
 
-#: vigi/lots/routes.py:414
+#: vigi/lots/routes.py:470 vigi/services/reports.py:160
 msgid "VigiFroid Lots Report"
 msgstr "Rapport des lots VigiFroid"
 
-#: vigi/lots/routes.py:418
+#: vigi/lots/routes.py:474 vigi/services/reports.py:60
+#: vigi/services/reports.py:169
 msgid "Status"
 msgstr "Statut"
 
-msgid "✅ Login successful."
-msgstr "✅ Connexion réussie."
+#: vigi/services/reports.py:265
+msgid "VigiFroid · Monthly lots report"
+msgstr "VigiFroid · Rapport mensuel des lots"
 
-msgid "❌ Invalid username or password."
-msgstr "❌ Nom d’utilisateur ou mot de passe invalide."
-
-msgid "✅ Logged out successfully."
-msgstr "✅ Déconnexion réussie."
-
-msgid "If an account exists with this email, you will receive a reset link."
-msgstr "Si un compte existe avec cet e-mail, vous recevrez un lien de réinitialisation."
-
-msgid "The reset link is invalid or has expired."
-msgstr "Le lien de réinitialisation est invalide ou a expiré."
-
-msgid "Password must be at least 8 characters long."
-msgstr "Le mot de passe doit contenir au moins 8 caractères."
-
-msgid "Passwords do not match."
-msgstr "Les mots de passe ne correspondent pas."
-
-msgid "Your password has been reset. You can now log in."
-msgstr "Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter."
+#: vigi/services/reports.py:266
+msgid "Please find attached the monthly lots export from VigiFroid."
+msgstr "Veuillez trouver en pièce jointe l'export mensuel des lots depuis VigiFroid."

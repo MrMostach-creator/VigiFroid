@@ -1,5 +1,5 @@
 # ────────────────────────────────────────────────
-# 📁 vigi/auth/routes.py — نسخة موحدة مع PostgreSQL وSQLAlchemy
+# 📁 vigi/auth/routes.py — نسخة مع إضافة Welcome / Onboarding
 # ────────────────────────────────────────────────
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
@@ -20,7 +20,59 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
+# ────────────────────────────────────────────────
+# 👋 صفحة الترحيب / Onboarding الأولى
+# ────────────────────────────────────────────────
+
+@auth_bp.route("/welcome", methods=["GET"])
+def welcome():
+    """
+    Première page d'onboarding / accueil pour VigiFroid.
+    Pas besoin d'être connecté.
+    Si l'utilisateur est déjà authentifié, on le renvoie vers l'index.
+    """
+    if current_user.is_authenticated:
+        return redirect(url_for("main.index"))
+    return render_template("welcome.html")
+
+
+@auth_bp.route("/onboarding-email", methods=["POST"])
+def onboarding_email():
+    """
+    Réception de l'e-mail depuis la page de bienvenue.
+    Vérifie si l'utilisateur existe déjà dans la base.
+    Si oui → on le redirige vers /auth/login.
+    Si non → on renvoie vers /auth/welcome avec un message.
+    """
+    if current_user.is_authenticated:
+        return redirect(url_for("main.index"))
+
+    email = request.form.get("email", "").strip().lower()
+
+    if not email:
+        # ⬅️ تمت إضافة _() لجعل الرسالة قابلة للترجمة
+        flash(_("Please enter your email address."), "warning")
+        return redirect(url_for("auth.welcome"))
+
+    user = User.query.filter_by(email=email).first()
+
+    if user is None:
+        # الإيميل غير موجود → نْعلّم المستخدم يتواصل مع المسؤول
+        # ⬅️ تمت إضافة _() للترجمة
+        flash(_("This email is not registered. Please contact the administrator."), "error")
+        return redirect(url_for("auth.welcome"))
+
+    # هنا فقط نمرّره للـ login، الـ localStorage هو اللي كيسجّل أن onboarding تكمّل
+    # ⬅️ تمت إضافة _() للترجمة
+    flash(_("Welcome! You can now log in with your credentials."), "success")
+    return redirect(url_for("auth.login"))
+
+
+# ────────────────────────────────────────────────
 # 🔐 صفحة تسجيل الدخول
+# ────────────────────────────────────────────────
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
@@ -33,19 +85,23 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            flash("✅ Login successful.", "success")
+            # ⬅️ جعل الرسالة قابلة للترجمة
+            flash(_("✅ Login successful."), "success")
             return redirect(url_for("main.index"))
         else:
+            # ⬅️ جعل الرسالة قابلة للترجمة
+            flash(_("❌ Invalid username or password."), "error")
 
-            flash("❌ Invalid username or password.", "error")
     return render_template("login.html")
+
 
 # 🚪 تسجيل الخروج
 @auth_bp.route("/logout")
 @login_required
 def logout():
     logout_user()
-    flash("✅ Logged out successfully.", "success")
+    # ⬅️ جعل الرسالة قابلة للترجمة
+    flash(_("✅ Logged out successfully."), "success")
     return redirect(url_for("auth.login"))
 
 
@@ -56,9 +112,11 @@ def logout():
 def get_serializer():
     return URLSafeTimedSerializer(current_app.config["SECRET_KEY"], salt="password-reset")
 
+
 def generate_reset_token(user):
     s = get_serializer()
     return s.dumps(user.id)
+
 
 def verify_reset_token(token, max_age=3600):
     s = get_serializer()
@@ -67,6 +125,7 @@ def verify_reset_token(token, max_age=3600):
     except (BadSignature, SignatureExpired):
         return None
     return User.query.get(user_id)
+
 
 def send_reset_email(user, token):
     """
@@ -120,6 +179,7 @@ def send_reset_email(user, token):
         # في حالة fallo فالإرسال، على الأقل يسجّل فـ log وما يطيحش التطبيق
         current_app.logger.error(f"[MAIL] Error sending reset email to {user.email}: {exc}")
 
+
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
     if current_user.is_authenticated:
@@ -128,15 +188,17 @@ def forgot_password():
     if request.method == "POST":
         email = request.form.get("email", "").strip()
         user = User.query.filter_by(email=email).first()
-        
+
         if user:
             token = generate_reset_token(user)
             send_reset_email(user, token)
-        
-        flash("If an account exists with this email, you will receive a reset link.", "info")
+
+        # ⬅️ جعل الرسالة قابلة للترجمة
+        flash(_("If an account exists with this email, you will receive a reset link."), "info")
         return redirect(url_for("auth.login"))
 
     return render_template("forgot_password.html")
+
 
 @auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
 def reset_password(token):
@@ -145,7 +207,8 @@ def reset_password(token):
 
     user = verify_reset_token(token)
     if not user:
-        flash("The reset link is invalid or has expired.", "error")
+        # ⬅️ جعل الرسالة قابلة للترجمة
+        flash(_("The reset link is invalid or has expired."), "error")
         return redirect(url_for("auth.forgot_password"))
 
     if request.method == "POST":
@@ -153,13 +216,16 @@ def reset_password(token):
         confirm_password = request.form.get("confirm_password", "")
 
         if len(password) < 8:
-            flash("Password must be at least 8 characters long.", "error")
+            # ⬅️ جعل الرسالة قابلة للترجمة
+            flash(_("Password must be at least 8 characters long."), "error")
         elif password != confirm_password:
-            flash("Passwords do not match.", "error")
+            # ⬅️ جعل الرسالة قابلة للترجمة
+            flash(_("Passwords do not match."), "error")
         else:
             user.password = generate_password_hash(password)
             db.session.commit()
-            flash("Your password has been reset. You can now log in.", "success")
+            # ⬅️ جعل الرسالة قابلة للترجمة
+            flash(_("Your password has been reset. You can now log in."), "success")
             return redirect(url_for("auth.login"))
 
     return render_template("reset_password.html", token=token)

@@ -8,6 +8,7 @@ from flask_login import login_required, current_user
 from vigi.extensions import cache
 from models import Log, User
 from datetime import datetime
+from flask_babel import gettext as _
 
 logs_bp = Blueprint("logs", __name__, url_prefix="/logs")
 
@@ -17,7 +18,7 @@ logs_bp = Blueprint("logs", __name__, url_prefix="/logs")
 def logs():
     # 👑 فقط الأدمن يمكنه الوصول
     if current_user.role != "admin":
-        flash("❌ Unauthorized access.", "danger")
+        flash(_("❌ Unauthorized access."), "danger")
         return redirect(url_for("main.index"))
 
     # 🧾 جلب السجلات الأخيرة
@@ -40,6 +41,6 @@ def logs():
 
     # ⚠️ إذا لا توجد سجلات
     if not logs_data:
-        flash("⚠️ لا توجد سجلات حالياً.", "info")
+        flash(_("⚠️ No logs found."), "info")
 
     return render_template("logs.html", logs=logs_data)

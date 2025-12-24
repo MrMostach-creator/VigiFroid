@@ -1,134 +1,139 @@
 <!-- templates/export_settings.html -->
+
 {% extends "base.html" %}
 {% block title %}VigiFroid · {{ _('Export settings') }}{% endblock %}
 {% set page_class = "page settings-page" %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
+<div class="d-flex justify-content-center align-items-start"
+     style="min-height: calc(100vh - var(--header-h)); padding-top: var(--spacing-3xl);">
 
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h1 class="h5 mb-2">{{ _('Monthly export settings') }}</h1>
-          <p class="text-muted small mb-4">
-            {{ _('Configure automatic monthly export of lots report to the quality manager.') }}
-          </p>
+  <div class="card w-100 shadow-sm"
+       style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
 
-          <form method="post" novalidate>
-            {{ form.hidden_tag() }}
+    <div class="card-body">
 
-            <!-- ON/OFF -->
-            <div class="form-check form-switch mb-3">
-              {{ form.export_enabled(class="form-check-input", id="export_enabled") }}
-              <label class="form-check-label" for="export_enabled">
-                {{ _('Enable monthly export to quality manager') }}
-              </label>
-              <div class="form-text">
-                {{ _('When enabled, the report will be sent automatically every month.') }}
-              </div>
-            </div>
+      <h1 class="h5 mb-2 text-center">{{ _('Monthly export settings') }}</h1>
+      <p class="text-muted small mb-4 text-center">
+        {{ _('Configure automatic monthly export of lots report to the quality manager.') }}
+      </p>
 
-            <hr class="my-3">
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
 
-            <!-- Email -->
-            <div class="mb-3" id="wrap_export_email">
-              <label for="export_email" class="form-label">{{ _('Quality manager email') }}</label>
-              {{ form.export_email(class="form-control", id="export_email", placeholder="quality.manager@company.com") }}
-              <div class="form-text">
-                {{ _('This email will receive the monthly lots report.') }}
-              </div>
-
-              {% if form.export_email.errors %}
-                {% for error in form.export_email.errors %}
-                  <div class="text-danger small mt-1">{{ error }}</div>
-                {% endfor %}
-              {% endif %}
-            </div>
-
-            <!-- Day -->
-            <div class="mb-3" id="wrap_export_day">
-              <label for="export_day" class="form-label">{{ _('Day of month for export') }}</label>
-              {{ form.export_day(class="form-control", id="export_day", min="1", max="28", step="1", inputmode="numeric") }}
-              <div class="form-text">
-                {{ _('The report will be sent once a month on this day (1–28). Recommended: 1.') }}
-              </div>
-
-              {% if form.export_day.errors %}
-                {% for error in form.export_day.errors %}
-                  <div class="text-danger small mt-1">{{ error }}</div>
-                {% endfor %}
-              {% endif %}
-            </div>
-
-            <!-- Format -->
-            <div class="mb-3" id="wrap_export_format">
-              <label for="export_format" class="form-label">{{ _('Report format') }}</label>
-              {{ form.export_format(class="form-select", id="export_format") }}
-              <div class="form-text">
-                {{ _('Choose whether the report is sent as PDF or CSV.') }}
-              </div>
-
-              {% if form.export_format.errors %}
-                {% for error in form.export_format.errors %}
-                  <div class="text-danger small mt-1">{{ error }}</div>
-                {% endfor %}
-              {% endif %}
-            </div>
-
-          <!-- Language -->
-            <div class="mb-3" id="wrap_report_language">
-              <label for="report_language" class="form-label">{{ _('Report language') }}</label>
-              {{ form.report_language(class="form-select", id="report_language") }}
-              <div class="form-text">
-                {{ _('Choose the language of the exported report (PDF/CSV).') }}
-              </div>
-
-              {% if form.report_language.errors %}
-                {% for error in form.report_language.errors %}
-                  <div class="text-danger small mt-1">{{ error }}</div>
-                {% endfor %}
-              {% endif %}
-            </div>
-
-
-
-            <button type="submit" class="btn btn-primary w-100">
-              {{ _('💾 Save') }}
-            </button>
-          </form>
-
-          {% if settings %}
-          <hr class="my-4">
-          <div class="small text-muted">
-            <div class="d-flex justify-content-between">
-              <span>{{ _('Auto-export') }}</span>
-              {% if settings.auto_export_enabled %}
-                <span class="text-success fw-semibold">{{ _('Enabled') }}</span>
-              {% else %}
-                <span class="text-danger fw-semibold">{{ _('Disabled') }}</span>
-              {% endif %}
-            </div>
-
-            <div class="d-flex justify-content-between mt-2">
-              <span>{{ _('Current email') }}</span>
-              <span class="fw-semibold">{{ settings.quality_email or '-' }}</span>
-            </div>
-
-            <div class="d-flex justify-content-between mt-2">
-              <span>{{ _('Day of month') }}</span>
-              <span class="fw-semibold">{{ settings.export_day or '-' }}</span>
-            </div>
-
-            <div class="d-flex justify-content-between mt-2">
-              <span>{{ _('Format') }}</span>
-              <span class="fw-semibold">{{ (settings.export_format or '-')|upper }}</span>
-            </div>
+        <!-- ON/OFF -->
+        <div class="form-check form-switch mb-3">
+          {{ form.export_enabled(class="form-check-input", id="export_enabled") }}
+          <label class="form-check-label" for="export_enabled">
+            {{ _('Enable monthly export to quality manager') }}
+          </label>
+          <div class="form-text">
+            {{ _('When enabled, the report will be sent automatically every month.') }}
           </div>
-          {% endif %}
+        </div>
 
+        <hr class="my-3">
+
+        <!-- Email -->
+        <div class="mb-3" id="wrap_export_email">
+          <label for="export_email" class="form-label">{{ _('Quality manager email') }}</label>
+          {{ form.export_email(class="form-control",
+                               id="export_email",
+                               placeholder="quality.manager@company.com") }}
+          <div class="form-text">
+            {{ _('This email will receive the monthly lots report.') }}
+          </div>
+
+          {% if form.export_email.errors %}
+            {% for error in form.export_email.errors %}
+              <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Day -->
+        <div class="mb-3" id="wrap_export_day">
+          <label for="export_day" class="form-label">{{ _('Day of month for export') }}</label>
+          {{ form.export_day(class="form-control",
+                             id="export_day",
+                             min="1",
+                             max="28",
+                             step="1",
+                             inputmode="numeric") }}
+          <div class="form-text">
+            {{ _('The report will be sent once a month on this day (1–28). Recommended: 1.') }}
+          </div>
+
+          {% if form.export_day.errors %}
+            {% for error in form.export_day.errors %}
+              <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Format -->
+        <div class="mb-3" id="wrap_export_format">
+          <label for="export_format" class="form-label">{{ _('Report format') }}</label>
+          {{ form.export_format(class="form-select", id="export_format") }}
+          <div class="form-text">
+            {{ _('Choose whether the report is sent as PDF or CSV.') }}
+          </div>
+
+          {% if form.export_format.errors %}
+            {% for error in form.export_format.errors %}
+              <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <!-- Language -->
+        <div class="mb-3" id="wrap_report_language">
+          <label for="report_language" class="form-label">{{ _('Report language') }}</label>
+          {{ form.report_language(class="form-select", id="report_language") }}
+          <div class="form-text">
+            {{ _('Choose the language of the exported report (PDF/CSV).') }}
+          </div>
+
+          {% if form.report_language.errors %}
+            {% for error in form.report_language.errors %}
+              <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">
+          {{ _('💾 Save') }}
+        </button>
+      </form>
+
+      {% if settings %}
+      <hr class="my-4">
+      <div class="small text-muted">
+        <div class="d-flex justify-content-between">
+          <span>{{ _('Auto-export') }}</span>
+          {% if settings.auto_export_enabled %}
+            <span class="text-success fw-semibold">{{ _('Enabled') }}</span>
+          {% else %}
+            <span class="text-danger fw-semibold">{{ _('Disabled') }}</span>
+          {% endif %}
+        </div>
+
+        <div class="d-flex justify-content-between mt-2">
+          <span>{{ _('Current email') }}</span>
+          <span class="fw-semibold">{{ settings.quality_email or '-' }}</span>
+        </div>
+
+        <div class="d-flex justify-content-between mt-2">
+          <span>{{ _('Day of month') }}</span>
+          <span class="fw-semibold">{{ settings.export_day or '-' }}</span>
+        </div>
+
+        <div class="d-flex justify-content-between mt-2">
+          <span>{{ _('Format') }}</span>
+          <span class="fw-semibold">{{ (settings.export_format or '-')|upper }}</span>
         </div>
       </div>
+      {% endif %}
 
     </div>
   </div>
@@ -144,9 +149,7 @@
     const email = document.getElementById('export_email');
     const day   = document.getElementById('export_day');
     const fmt   = document.getElementById('export_format');
-
-    // ✅ زيدنا language (اختياري)
-    const lang = document.getElementById('report_language');
+    const lang  = document.getElementById('report_language');
 
     const wrapEmail = document.getElementById('wrap_export_email');
     const wrapDay   = document.getElementById('wrap_export_day');
@@ -166,8 +169,6 @@
       setDisabled(email, wrapEmail, disabled);
       setDisabled(day, wrapDay, disabled);
       setDisabled(fmt, wrapFmt, disabled);
-
-      // ✅ إذا بغيتي language تبقى خدامة حتى OFF → حيد هاد السطر
       setDisabled(lang, wrapLang, disabled);
     }
 

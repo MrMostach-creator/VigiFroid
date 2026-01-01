@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-from vigi.extensions import db, mail
+from vigi.extensions import db, mail, limiter
 from flask_mail import Message
 from models import User
 from vigi import login_manager
@@ -38,6 +38,7 @@ def welcome():
 
 
 @auth_bp.route("/onboarding-email", methods=["POST"])
+@limiter.limit("5 per minute")
 def onboarding_email():
     """
     Réception de l'e-mail depuis la page de bienvenue.
@@ -74,6 +75,7 @@ def onboarding_email():
 # ────────────────────────────────────────────────
 
 @auth_bp.route("/login", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))
@@ -147,23 +149,8 @@ def send_reset_email(user, token):
         url=reset_url,
     )
 
-    # النسخة HTML بسيطة
-    html_body = f"""
-    <p>{_('Hello')} <strong>{user.username}</strong>,</p>
-    <p>{_('You requested to reset your VigiFroid password.')}</p>
-    <p>{_('To choose a new password, click the button below:')}</p>
-    <p>
-      <a href="{reset_url}"
-         style="display:inline-block;padding:10px 18px;
-                background:#4179D9;color:#fff;text-decoration:none;
-                border-radius:6px;font-weight:600;">
-        {_('Reset password')}
-      </a>
-    </p>
-    <p style="margin-top:16px;font-size:13px;color:#6b7280;">
-      {_('If you did not request this, you can ignore this email.')}
-    </p>
-    """
+    # النسخة HTML (Jinja2)
+    html_body = render_template('email/reset_password.html', user=user, reset_url=reset_url)
 
     try:
         msg = Message(
@@ -181,6 +168,7 @@ def send_reset_email(user, token):
 
 
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def forgot_password():
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))

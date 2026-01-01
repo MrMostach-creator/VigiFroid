@@ -14,10 +14,12 @@ class Config:
     BABEL_DEFAULT_LOCALE = "fr"
     BABEL_DEFAULT_TIMEZONE = "Africa/Casablanca"
     BABEL_TRANSLATION_DIRECTORIES = str(BASE_DIR / "translations")
-    ASSET_VERSION = "v2.4.3"
+    ASSET_VERSION = "v1.0.0"
 
     # ── Security / Sessions ──────────────────────────────
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-vigifroid-keep-this-constant")
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    if not SECRET_KEY:
+       raise RuntimeError("SECRET_KEY environment variable is required")
 
     SESSION_COOKIE_NAME = "vf_session"
     SESSION_COOKIE_HTTPONLY = True
@@ -62,13 +64,15 @@ class Config:
     # CSRF
     WTF_CSRF_TIME_LIMIT = 3600 * 6  
 
-    # ── 📧 Mail / SMTP 
+# ── 📧 Mail / SMTP 
     MAIL_SERVER = "smtp.gmail.com"
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
 
-    # الإيميل اللي غادي يتصيفط منو
+# الإيميل اللي غادي يتصيفط منو
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
-    MAIL_DEFAULT_SENDER = ("VigiFroid", MAIL_USERNAME)
+
+# ✅ Sender آمن حتى لو MAIL_USERNAME فارغ
+    MAIL_DEFAULT_SENDER = ("VigiFroid", MAIL_USERNAME or "no-reply@vigifroid.local")

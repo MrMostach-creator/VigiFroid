@@ -1,4 +1,2 @@
-UPDATE app_settings
-SET last_export_month = NULL,
-    last_export_at = NULL
-WHERE id = 1;
+SELECT last_export_month, last_export_at
+FROM app_settings;

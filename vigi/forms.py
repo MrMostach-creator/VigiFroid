@@ -11,6 +11,7 @@ from wtforms import (
     SubmitField,
     BooleanField,
     SelectField,
+    TextAreaField,
 )
 from wtforms.validators import (
     DataRequired,
@@ -58,12 +59,10 @@ class AppSettingsForm(FlaskForm):
 
     export_enabled = BooleanField(_l("Enable monthly export to quality manager"))
 
-    export_email = StringField(
-        _l("Quality manager email"),
-        validators=[
-            Optional(),
-            Email(message=_l("⚠️ Please enter a valid email address."))
-        ]
+    # Updated to support multiple emails
+    quality_emails = TextAreaField(
+        _l("Quality manager emails (one per line)"),
+        validators=[Optional()]
     )
 
     export_day = IntegerField(
@@ -90,9 +89,25 @@ class AppSettingsForm(FlaskForm):
     submit = SubmitField(_l("💾 Save"))
 
     # ✅ منطق: إلا كان ON خاص email + day
-    def validate_export_email(self, field):
-        if self.export_enabled.data and not (field.data or "").strip():
-            raise ValidationError(_l("⚠️ Email is required when auto-export is enabled."))
+    def validate_quality_emails(self, field):
+        if not self.export_enabled.data:
+            return
+
+        from vigi.utils import parse_emails
+        raw = (field.data or "").strip()
+        
+        # 1. Require at least one email
+        if not raw:
+            raise ValidationError(_l("⚠️ At least one email is required when auto-export is enabled."))
+
+        # 2. Validate format of all emails (parse_emails does basic check, but we want to ensure *everything* entered is valid-ish)
+        # parse_emails returns only valid ones. If the user entered "foo", parse_emails might return [], 
+        # or if we want strict validation, we should check line by line.
+        # Let's rely on parse_emails to extract valid ones. 
+        # If user entered garbage, parse_emails returns empty list => error.
+        valid_list = parse_emails(raw)
+        if not valid_list:
+             raise ValidationError(_l("⚠️ Please enter valid email addresses."))
 
     def validate_export_day(self, field):
         if self.export_enabled.data and not field.data:

@@ -144,7 +144,7 @@
             <strong>Lot:</strong> {{ lot.lot_number }}<br>
             <strong>{{ _('Expiry') }}:</strong>
             {% if lot.expiry_date %}
-            {{ format_date(lot.expiry_date) }}
+            {{ fmt_date(lot.expiry_date) }}
             {% else %}
             {{ _('Unknown') }}
             {% endif %}<br>

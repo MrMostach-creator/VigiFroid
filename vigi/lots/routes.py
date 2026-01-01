@@ -1,43 +1,61 @@
-
 # ────────────────────────────────
-# vigi/lots/routes.py 
+# vigi/lots/routes.py  ✅ CLEAN FINAL (safe + no duplicates + manual PDF = auto-export PDF)
 # ────────────────────────────────
 
-from flask import (
-    Blueprint, render_template, redirect, url_for, flash, request, session,
-    abort, send_file, make_response, current_app, jsonify
-)
-from flask_login import login_required, current_user
-from functools import wraps
-from vigi.extensions import db, cache
-from models import Lot, Log, AppSettings 
-from vigi.forms import LotForm, AppSettingsForm
-from datetime import datetime, timedelta
+from __future__ import annotations
+
 import csv
 import io
 import os
+from datetime import datetime, timedelta
+
+import pytz
 from PIL import Image
 from sqlalchemy.exc import IntegrityError
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.pagesizes import A4, landscape
-from flask_babel import gettext as _, format_date, get_locale, force_locale
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+
+from flask import (
+    Blueprint,
+    abort,
+    current_app,
+    flash,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    session,
+    url_for,
+)
+from flask_babel import force_locale, get_locale, gettext as _
+from flask_login import current_user, login_required
+from functools import wraps
+
+from vigi.extensions import cache, db
+from vigi.forms import AppSettingsForm, LotForm
+from vigi.services.reports import build_lots_pdf_from_lots
+from models import AppSettings, Log, Lot
 
 
-# Arabic shaping 
+lots_bp = Blueprint("lots", __name__, url_prefix="/lots")
+
+
+# ────────────────────────────────
+# Time helpers (safe)
+# ────────────────────────────────
+# إذا عندك vigi/utils_time.py فيه get_now/get_today_date → غادي نستعملوه
+# وإلا fallback هنا باش ما يطيحش التطبيق.
 try:
-    import arabic_reshaper
-    from bidi.algorithm import get_display
-    HAS_ARABIC_SUPPORT = True
+    from vigi.utils_time import get_now, get_today_date  # type: ignore
 except Exception:
-    arabic_reshaper = None
-    get_display = None
-    HAS_ARABIC_SUPPORT = False
+    def get_now(tz=None):
+        if not tz:
+            tz = pytz.timezone(current_app.config.get("BABEL_DEFAULT_TIMEZONE", "Africa/Casablanca"))
+        return datetime.now(tz)
 
-lots_bp = Blueprint("lots", __name__, url_prefix="/lots")    
+    def get_today_date():
+        return get_now().date()
+
 
 # ────────────────────────────────
 # صلاحيات الأدمن
@@ -50,8 +68,9 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 # ────────────────────────────────
-# عرض كل الـ Lots (مع Pagination + إحصائيات)
+# عرض كل الـ Lots (Pagination + إحصائيات)
 # ────────────────────────────────
 @lots_bp.route("/")
 def index():
@@ -68,7 +87,8 @@ def index():
             (Lot.pn.ilike(like))
         )
 
-    today = datetime.utcnow().date()
+    today = get_today_date()
+
     if status == "valid":
         query = query.filter(Lot.expiry_date > today + timedelta(days=30))
     elif status == "warning":
@@ -79,18 +99,21 @@ def index():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 48, type=int)
     if per_page not in (12, 24, 48):
-       per_page = 48
+        per_page = 48
+
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     lots = pagination.items
     total = pagination.total
     pages = pagination.pages
-    
 
-    print("🔍 DEBUG => total =", total)
-    print("🔍 DEBUG => per_page =", per_page)
-    print("🔍 DEBUG => pages =", pages)
-    print("🔍 DEBUG => lots count on this page =", len(lots))
+    # Debug فقط فـ mode debug
+    if current_app.debug:
+        print("🔍 DEBUG => total =", total)
+        print("🔍 DEBUG => per_page =", per_page)
+        print("🔍 DEBUG => pages =", pages)
+        print("🔍 DEBUG => lots count on this page =", len(lots))
 
+    # Base query للإحصائيات (نفس الفلاتر)
     base_q = query.session.query(Lot)
     if q:
         like = f"%{q}%"
@@ -107,7 +130,7 @@ def index():
     elif status == "expired":
         base_q = base_q.filter(Lot.expiry_date < today)
 
-
+    # status مؤقت للـ UI
     for lot in lots:
         st = "unknown"
         if lot.expiry_date:
@@ -117,7 +140,6 @@ def index():
                 st = "warning"
             else:
                 st = "valid"
-        
         setattr(lot, "temp_status", st)
 
     valid_count = base_q.filter(Lot.expiry_date > today + timedelta(days=30)).count()
@@ -126,14 +148,23 @@ def index():
 
     resp = make_response(render_template(
         "index.html",
-        lots=lots, q=q, status=status, page=page, per_page=per_page, total=total, pages=pages,
-        valid_count=valid_count, warning_count=warning_count, expired_count=expired_count,
-        lang=str(get_locale() or "fr")
+        lots=lots,
+        q=q,
+        status=status,
+        page=page,
+        per_page=per_page,
+        total=total,
+        pages=pages,
+        valid_count=valid_count,
+        warning_count=warning_count,
+        expired_count=expired_count,
+        lang=str(get_locale() or "fr"),
     ))
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     resp.headers["Pragma"] = "no-cache"
     resp.headers["Expires"] = "0"
     return resp
+
 
 # ────────────────────────────────
 # إضافة Lot جديد
@@ -146,19 +177,21 @@ def add_lot():
     if form.validate_on_submit():
         try:
             lot = Lot(
-                lot_number=form.lot_number.data.strip(),
-                product_name=form.product_name.data.strip(),
-                type=form.type.data.strip(),
+                lot_number=(form.lot_number.data or "").strip(),
+                product_name=(form.product_name.data or "").strip(),
+                type=(form.type.data or "").strip(),
                 expiry_date=form.expiry_date.data,
-                pn=form.pn.data.strip(),
-
+                pn=(form.pn.data or "").strip(),
             )
 
             if form.image.data:
                 image_file = form.image.data
-                filename = f"img_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.jpg"
-                os.makedirs("static/images", exist_ok=True)
-                image_path = os.path.join("static/images", filename)
+                filename = f"img_{get_now().strftime('%Y%m%d%H%M%S')}.jpg"
+
+                upload_dir = current_app.config.get("UPLOAD_FOLDER") or os.path.join(current_app.root_path, "static", "images")
+                os.makedirs(upload_dir, exist_ok=True)
+
+                image_path = os.path.join(upload_dir, filename)
                 Image.open(image_file).convert("RGB").save(image_path, "JPEG", optimize=True, quality=80)
                 lot.image = filename
 
@@ -186,6 +219,7 @@ def add_lot():
 
     return render_template("add.html", form=form)
 
+
 # ────────────────────────────────
 # تعديل Lot
 # ────────────────────────────────
@@ -199,18 +233,20 @@ def edit_lot(lot_id):
 
     if form.validate_on_submit():
         try:
-            lot.lot_number = form.lot_number.data.strip()
-            lot.product_name = form.product_name.data.strip()
-            lot.type = form.type.data.strip()
-            lot.pn = form.pn.data.strip()
-
+            lot.lot_number = (form.lot_number.data or "").strip()
+            lot.product_name = (form.product_name.data or "").strip()
+            lot.type = (form.type.data or "").strip()
+            lot.pn = (form.pn.data or "").strip()
             lot.expiry_date = form.expiry_date.data
 
             if form.image.data:
                 image_file = form.image.data
-                filename = f"img_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.jpg"
-                os.makedirs("static/images", exist_ok=True)
-                image_path = os.path.join("static/images", filename)
+                filename = f"img_{get_now().strftime('%Y%m%d%H%M%S')}.jpg"
+
+                upload_dir = current_app.config.get("UPLOAD_FOLDER") or os.path.join(current_app.root_path, "static", "images")
+                os.makedirs(upload_dir, exist_ok=True)
+
+                image_path = os.path.join(upload_dir, filename)
                 Image.open(image_file).convert("RGB").save(image_path, "JPEG", optimize=True, quality=80)
                 lot.image = filename
 
@@ -235,6 +271,7 @@ def edit_lot(lot_id):
             flash(_("Error while editing: %(err)s", err=str(e)), "danger")
 
     return render_template("edit.html", form=form, lot=lot, formatted_expiry_date=formatted_expiry_date)
+
 
 # ────────────────────────────────
 # حذف Lot
@@ -272,59 +309,65 @@ def export_settings():
     settings = AppSettings.get()
     form = AppSettingsForm(obj=settings)
 
+    # Backward compatibility: on GET, if multi empty show legacy email
+    if request.method == "GET":
+        if not (form.quality_emails.data or "").strip() and (settings.quality_email or "").strip():
+            form.quality_emails.data = settings.quality_email
+
     if form.validate_on_submit():
         enabled = bool(form.export_enabled.data)
-        email_value = (form.export_email.data or "").strip() or None
-        day_value = form.export_day.data
-        fmt_value = (form.export_format.data or "pdf").lower()
 
-        # ✅ الجديد: اللغة (لازم تكون هنا قبل if ديال allowed_langs)
+        # Always keep language saved (even if disabled)
         lang_value = (form.report_language.data or settings.report_language or "fr").strip().lower()
-        allowed_langs = {"ar", "fr", "en"}
-        if lang_value not in allowed_langs:
+        if lang_value not in {"ar", "fr", "en"}:
             lang_value = settings.report_language or "fr"
 
-        allowed_formats = {"pdf", "csv"}
-        if fmt_value not in allowed_formats:
-            fmt_value = "pdf"
-
-        if enabled:
-            if not email_value:
-                flash(_("Please enter a quality manager email if auto-export is enabled."), "error")
-                return render_template("export_settings.html", form=form, settings=settings)
-
-            if not day_value:
-                flash(_("Please choose the day of the month for auto-export."), "error")
-                return render_template("export_settings.html", form=form, settings=settings)
-
-            if not (1 <= int(day_value) <= 28):
-                flash(_("Please choose a day between 1 and 28."), "error")
-                return render_template("export_settings.html", form=form, settings=settings)
-
-            settings.quality_email = email_value
-            settings.export_day = int(day_value)
-            settings.export_format = fmt_value
-
-        # ✅ أنا كنفضّل نخزّن اللغة حتى وهو OFF باش تبقى محفوظة
         settings.report_language = lang_value
         settings.auto_export_enabled = enabled
-        db.session.add(settings)
-        db.session.commit()
 
-        flash(_("Settings updated successfully."), "success")
-        return redirect(url_for("lots.export_settings"))
+        # If auto-export is ON, update dependent fields
+        if enabled:
+            emails_value = (form.quality_emails.data or "").strip()
+            day_value = form.export_day.data
+            fmt_value = (form.export_format.data or "pdf").strip().lower()
 
+            if fmt_value not in {"pdf", "csv"}:
+                fmt_value = "pdf"
+
+            # Save multi emails
+            settings.quality_emails = emails_value
+
+            # Keep legacy (first email) for backward compatibility
+            from vigi.utils import parse_emails
+            valid_list = parse_emails(emails_value)
+            settings.quality_email = valid_list[0] if valid_list else None
+
+            # Extra safety: avoid None / bad int (form should already validate)
+            settings.export_day = int(day_value) if day_value else settings.export_day
+            settings.export_format = fmt_value
+
+        # ✅ Commit with safety (prevents 500 on DB errors)
+        try:
+            db.session.add(settings)
+            db.session.commit()
+            flash(_("Settings updated successfully."), "success")
+            return redirect(url_for("lots.export_settings"))
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"[EXPORT_SETTINGS] DB commit failed: {e}")
+            flash(_("Error saving settings. Please try again."), "danger")
+            return redirect(url_for("lots.export_settings"))
 
     return render_template("export_settings.html", form=form, settings=settings)
 
 # ────────────────────────────────
 # تصدير إلى CSV
 # ────────────────────────────────
-@lots_bp.route('/export', methods=['GET'])
+@lots_bp.route("/export", methods=["GET"])
 @login_required
 def export_csv():
-    q = request.args.get("q", "").strip()
-    status = request.args.get("status", "").strip()
+    q = (request.args.get("q") or "").strip()
+    status = (request.args.get("status") or "").strip()
 
     query = Lot.query.order_by(Lot.expiry_date.asc(), Lot.product_name.asc())
 
@@ -335,7 +378,7 @@ def export_csv():
             (Lot.pn.ilike(f"%{q}%"))
         )
 
-    today = datetime.utcnow().date()
+    today = get_today_date()
     if status == "valid":
         query = query.filter(Lot.expiry_date > today + timedelta(days=30))
     elif status == "warning":
@@ -348,87 +391,54 @@ def export_csv():
 
     with force_locale(cur_locale):
         output = io.StringIO()
-        writer = csv.writer(output, delimiter=';')
+        writer = csv.writer(output, delimiter=";")
 
-        writer.writerow([
-            _('Product Name'), _('PN'), _('Lot Number'),
-            _('Expiry Date'), _('Product Type')
-        ])
+        writer.writerow([_("Product Name"), _("PN"), _("Lot Number"), _("Expiry Date"), _("Product Type")])
 
         for lot in lots:
             writer.writerow([
-                lot.product_name or '',
-                lot.pn or '',
-                lot.lot_number or '',
-                lot.expiry_date.strftime("%Y-%m-%d") if lot.expiry_date else '',
-                lot.type or ''
+                lot.product_name or "",
+                lot.pn or "",
+                lot.lot_number or "",
+                lot.expiry_date.strftime("%Y-%m-%d") if lot.expiry_date else "",
+                lot.type or "",
             ])
 
         output.seek(0)
-        filename = f"VigiFroid_Export_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+        filename = f"VigiFroid_Export_{get_now().strftime('%Y%m%d_%H%M%S')}.csv"
         resp = send_file(
             io.BytesIO(output.getvalue().encode("utf-8-sig")),
-            mimetype='text/csv; charset=utf-8',
+            mimetype="text/csv; charset=utf-8",
             as_attachment=True,
-            download_name=filename
+            download_name=filename,
         )
-        resp.headers['Content-Language'] = cur_locale
+        resp.headers["Content-Language"] = cur_locale
         return resp
 
+
 # ────────────────────────────────
-# تصدير إلى PDF (عربي 100% بدون مربعات)
+# تصدير إلى PDF ✅ (Manual PDF = Auto-export PDF 100%)
 # ────────────────────────────────
-# ---------- PDF EXPORT ----------
-@lots_bp.route('/export/pdf', methods=['GET'])
+@lots_bp.route("/export/pdf", methods=["GET"])
 @login_required
 def export_pdf():
-    q = request.args.get("q", "").strip()
-    status = request.args.get("status", "").strip()
+    q = (request.args.get("q") or "").strip()
+    status = (request.args.get("status") or "").strip()
     force_lang = request.args.get("lang")
 
-    cur_locale = force_lang if force_lang in ['ar','fr','en'] else str(get_locale() or "fr")
-    session['lang'] = cur_locale
-    is_ar = cur_locale.startswith("ar")
+    cur_locale = force_lang if force_lang in ["ar", "fr", "en"] else str(get_locale() or "fr")
+    session["lang"] = cur_locale
 
-    # ---------- تسجيل الخطوط داخل الـ view ----------
-    if is_ar:
-        font_dir = os.path.join(current_app.static_folder, "fonts")
-        reg_path  = os.path.join(font_dir, "NotoNaskhArabic-Regular.ttf")
-        bold_path = os.path.join(font_dir, "NotoNaskhArabic-Bold.ttf")
-        try:
-            # ✅ فحص آمن لأسماء الخطوط المسجّلة بدل getFont(..)
-            registered = set(pdfmetrics.getRegisteredFontNames())
-
-            if "NotoNaskhArabic" not in registered:
-                pdfmetrics.registerFont(TTFont("NotoNaskhArabic", reg_path))
-            if "NotoNaskhArabic-Bold" not in registered:
-                pdfmetrics.registerFont(TTFont("NotoNaskhArabic-Bold", bold_path))
-
-            # ✅ تسجيل عائلة الخط لضمان تعيين الوزن العريض تلقائيًا
-            pdfmetrics.registerFontFamily(
-                "NotoNaskhArabic",
-                normal="NotoNaskhArabic",
-                bold="NotoNaskhArabic-Bold",
-                italic="NotoNaskhArabic",
-                boldItalic="NotoNaskhArabic-Bold"
-            )
-
-        except Exception as e:
-            current_app.logger.error(f"Font registration failed: {e}")
-            is_ar = False   # fallback إلى Helvetica فقط إذا فشلت القراءة فعلاً
-
-    font_regular = "NotoNaskhArabic" if is_ar else "Helvetica"
-    font_bold    = "NotoNaskhArabic-Bold" if is_ar else "Helvetica-Bold"
-
-    # ---------- استعلام البيانات ----------
+    today = get_today_date()
     query = Lot.query.order_by(Lot.expiry_date.asc(), Lot.product_name.asc())
-    today = datetime.utcnow().date()
+
     if q:
         query = query.filter(
             (Lot.product_name.ilike(f"%{q}%")) |
             (Lot.lot_number.ilike(f"%{q}%")) |
             (Lot.pn.ilike(f"%{q}%"))
         )
+
     if status == "valid":
         query = query.filter(Lot.expiry_date > today + timedelta(days=30))
     elif status == "warning":
@@ -438,80 +448,13 @@ def export_pdf():
 
     lots = query.all()
 
-    # ---------- بناء الـ PDF ----------
-    with force_locale(cur_locale):
-        buf = io.BytesIO()
-        doc = SimpleDocTemplate(buf, pagesize=landscape(A4),
-                                leftMargin=20, rightMargin=20,
-                                topMargin=30, bottomMargin=20)
-        elements = []
-        styles = getSampleStyleSheet()
+    pdf_bytes = build_lots_pdf_from_lots(lots, lang_code=cur_locale, today=today)
+    buf = io.BytesIO(pdf_bytes)
+    buf.seek(0)
 
-        def _p(text, font_name, size=9, align=0, bold=False):
-            if is_ar and HAS_ARABIC_SUPPORT and text:
-                text = get_display(arabic_reshaper.reshape(text))
-            style = ParagraphStyle(
-                name='Custom',
-                parent=styles['Normal'],
-                fontName=font_name,
-                fontSize=size,
-                alignment=align,
-                leading=size+2,
-                direction='RTL' if is_ar else 'LTR',
-                rightIndent=4 if is_ar else 0,
-                leftIndent=4 if not is_ar else 0,
-                wordWrap='RTL' if is_ar else None   # ✅ تحسين التفاف النص العربي
-            )
-            tag = f"<font name='{font_bold}'><b>{text}</b></font>" if bold else text
-            return Paragraph(tag.replace('&', '&amp;'), style)
+    filename = f"VigiFroid_Report_{get_now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    return send_file(buf, mimetype="application/pdf", as_attachment=True, download_name=filename)
 
-        # عنوان
-        elements.append(_p(_("VigiFroid Lots Report"), font_bold, size=16, align=1, bold=True))
-        elements.append(Spacer(1, 12))
-
-        # رؤوس الجدول
-        headers = [_('Product Name'), _('PN'), _('Lot Number'), _('Expiry Date'), _('Product Type'), _('Status')]
-        header_row = [_p(h, font_bold, bold=True, align=2 if is_ar else 1) for h in headers]
-        data = [header_row]
-
-        # الصفوف
-        for lot in lots:
-            state = _("Expired") if lot.expiry_date and lot.expiry_date < today else \
-                    _("Warning") if lot.expiry_date and lot.expiry_date <= today + timedelta(days=30) else \
-                    _("Valid")
-            expiry = format_date(lot.expiry_date) if lot.expiry_date else ""
-            row = [lot.product_name or "", lot.pn or "", lot.lot_number or "", expiry, lot.type or "", state]
-            data.append([_p(cell, font_regular, align=2 if is_ar else 1) for cell in row])
-
-        table = Table(data, repeatRows=1, colWidths=[140, 80, 90, 80, 75, 70])
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.Color(0.2, 0.4, 0.8)),
-            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-            ('ALIGN', (0,0), (-1,0), 'CENTER'),
-            ('FONTNAME', (0,0), (-1,0), font_bold),
-            ('FONTSIZE', (0,0), (-1,-1), 9),
-            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('LEFTPADDING', (0,0), (-1,-1), 6),
-            ('RIGHTPADDING', (0,0), (-1,-1), 6),
-            ('ALIGN', (0,1), (-1,-1), 'RIGHT' if is_ar else 'CENTER'),
-            ('FONTNAME', (0,1), (-1,-1), font_regular),
-        ]))
-
-        # تلوين الصفوف حسب الحالة
-        for i, lot in enumerate(lots, 1):
-            col = colors.Color(1, 0.8, 0.8) if lot.expiry_date and lot.expiry_date < today else \
-                  colors.Color(1, 1, 0.8)   if lot.expiry_date and lot.expiry_date <= today + timedelta(days=30) else \
-                  colors.Color(0.8, 1, 0.8)
-            table.setStyle(TableStyle([('BACKGROUND', (0,i), (-1,i), col)]))
-
-        elements.append(table)
-        doc.build(elements)
-        buf.seek(0)
-
-        filename = f"VigiFroid_Report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
-        return send_file(buf, mimetype="application/pdf",
-                         as_attachment=True, download_name=filename)
 
 # ────────────────────────────────
 # API JSON للـ Lots (للاستخدام الداخلي)
@@ -523,6 +466,7 @@ def api_json():
     status = (request.args.get("status") or "").strip()
 
     query = Lot.query.order_by(Lot.expiry_date.asc(), Lot.product_name.asc())
+
     if q:
         like = f"%{q}%"
         query = query.filter(
@@ -531,7 +475,7 @@ def api_json():
             (Lot.pn.ilike(like))
         )
 
-    today = datetime.utcnow().date()
+    today = get_today_date()
     if status == "valid":
         query = query.filter(Lot.expiry_date > today + timedelta(days=30))
     elif status == "warning":
@@ -540,7 +484,13 @@ def api_json():
         query = query.filter(Lot.expiry_date < today)
 
     rows = query.with_entities(
-        Lot.id, Lot.product_name, Lot.pn, Lot.lot_number, Lot.expiry_date, Lot.type, Lot.image
+        Lot.id,
+        Lot.product_name,
+        Lot.pn,
+        Lot.lot_number,
+        Lot.expiry_date,
+        Lot.type,
+        Lot.image,
     ).all()
 
     def to_dict(r):
@@ -551,8 +501,7 @@ def api_json():
             "lot_number": r.lot_number or "",
             "expiry_date": r.expiry_date.strftime("%Y-%m-%d") if r.expiry_date else "",
             "type": r.type or "",
-            "image": r.image or ""
+            "image": r.image or "",
         }
+
     return jsonify([to_dict(r) for r in rows])
-
-

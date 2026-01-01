@@ -6,4 +6,5 @@ set PYTHONIOENCODING=utf-8
 cd /d C:\Users\samsung\Desktop\VigiFroid_App
 if not exist logs mkdir logs
 
+echo =================== %DATE% %TIME% =================== >> logs\autoexport_task.log
 C:\Users\samsung\Desktop\VigiFroid_App\venv\Scripts\python.exe -m flask --app wsgi.py autoexport --lang fr >> logs\autoexport_task.log 2>&1

@@ -6,10 +6,9 @@
 
 {% block content %}
 <div class="d-flex justify-content-center align-items-start"
-     style="min-height: calc(100vh - var(--header-h)); padding-top: var(--spacing-3xl);">
+  style="min-height: calc(100vh - var(--header-h)); padding-top: var(--spacing-3xl);">
 
-  <div class="card w-100 shadow-sm"
-       style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+  <div class="card w-100 shadow-sm" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
 
     <div class="card-body">
 
@@ -35,19 +34,20 @@
         <hr class="my-3">
 
         <!-- Email -->
-        <div class="mb-3" id="wrap_export_email">
-          <label for="export_email" class="form-label">{{ _('Quality manager email') }}</label>
-          {{ form.export_email(class="form-control",
-                               id="export_email",
-                               placeholder="quality.manager@company.com") }}
+        <div class="mb-3" id="wrap_quality_emails">
+          <label for="quality_emails" class="form-label">{{ _('Quality manager emails') }}</label>
+          {{ form.quality_emails(class="form-control",
+          id="quality_emails",
+          rows="3",
+          placeholder="manager1@example.com\nmanager2@example.com") }}
           <div class="form-text">
-            {{ _('This email will receive the monthly lots report.') }}
+            {{ _('Enter one or more emails (separated by new line or comma).') }}
           </div>
 
-          {% if form.export_email.errors %}
-            {% for error in form.export_email.errors %}
-              <div class="text-danger small mt-1">{{ error }}</div>
-            {% endfor %}
+          {% if form.quality_emails.errors %}
+          {% for error in form.quality_emails.errors %}
+          <div class="text-danger small mt-1">{{ error }}</div>
+          {% endfor %}
           {% endif %}
         </div>
 
@@ -55,19 +55,19 @@
         <div class="mb-3" id="wrap_export_day">
           <label for="export_day" class="form-label">{{ _('Day of month for export') }}</label>
           {{ form.export_day(class="form-control",
-                             id="export_day",
-                             min="1",
-                             max="28",
-                             step="1",
-                             inputmode="numeric") }}
+          id="export_day",
+          min="1",
+          max="28",
+          step="1",
+          inputmode="numeric") }}
           <div class="form-text">
             {{ _('The report will be sent once a month on this day (1–28). Recommended: 1.') }}
           </div>
 
           {% if form.export_day.errors %}
-            {% for error in form.export_day.errors %}
-              <div class="text-danger small mt-1">{{ error }}</div>
-            {% endfor %}
+          {% for error in form.export_day.errors %}
+          <div class="text-danger small mt-1">{{ error }}</div>
+          {% endfor %}
           {% endif %}
         </div>
 
@@ -80,9 +80,9 @@
           </div>
 
           {% if form.export_format.errors %}
-            {% for error in form.export_format.errors %}
-              <div class="text-danger small mt-1">{{ error }}</div>
-            {% endfor %}
+          {% for error in form.export_format.errors %}
+          <div class="text-danger small mt-1">{{ error }}</div>
+          {% endfor %}
           {% endif %}
         </div>
 
@@ -95,9 +95,9 @@
           </div>
 
           {% if form.report_language.errors %}
-            {% for error in form.report_language.errors %}
-              <div class="text-danger small mt-1">{{ error }}</div>
-            {% endfor %}
+          {% for error in form.report_language.errors %}
+          <div class="text-danger small mt-1">{{ error }}</div>
+          {% endfor %}
           {% endif %}
         </div>
 
@@ -112,15 +112,16 @@
         <div class="d-flex justify-content-between">
           <span>{{ _('Auto-export') }}</span>
           {% if settings.auto_export_enabled %}
-            <span class="text-success fw-semibold">{{ _('Enabled') }}</span>
+          <span class="text-success fw-semibold">{{ _('Enabled') }}</span>
           {% else %}
-            <span class="text-danger fw-semibold">{{ _('Disabled') }}</span>
+          <span class="text-danger fw-semibold">{{ _('Disabled') }}</span>
           {% endif %}
         </div>
 
         <div class="d-flex justify-content-between mt-2">
-          <span>{{ _('Current email') }}</span>
-          <span class="fw-semibold">{{ settings.quality_email or '-' }}</span>
+          <span>{{ _('Recipients') }}</span>
+          <span class="fw-semibold text-end" style="white-space: pre-line;">{{ settings.get_recipients()|join(', ') or
+            '-' }}</span>
         </div>
 
         <div class="d-flex justify-content-between mt-2">
@@ -146,15 +147,15 @@
   (function () {
     const toggle = document.getElementById('export_enabled');
 
-    const email = document.getElementById('export_email');
-    const day   = document.getElementById('export_day');
-    const fmt   = document.getElementById('export_format');
-    const lang  = document.getElementById('report_language');
+    const email = document.getElementById('quality_emails');
+    const day = document.getElementById('export_day');
+    const fmt = document.getElementById('export_format');
+    const lang = document.getElementById('report_language');
 
-    const wrapEmail = document.getElementById('wrap_export_email');
-    const wrapDay   = document.getElementById('wrap_export_day');
-    const wrapFmt   = document.getElementById('wrap_export_format');
-    const wrapLang  = document.getElementById('wrap_report_language');
+    const wrapEmail = document.getElementById('wrap_quality_emails');
+    const wrapDay = document.getElementById('wrap_export_day');
+    const wrapFmt = document.getElementById('wrap_export_format');
+    const wrapLang = document.getElementById('wrap_report_language');
 
     function setDisabled(el, wrap, disabled) {
       if (!el) return;

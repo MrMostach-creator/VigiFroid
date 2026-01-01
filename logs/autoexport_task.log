@@ -1,3 +1,47 @@
- Auto export: SENT
- Auto export: SKIPPED (disabled / wrong day / already sent / missing email)
- Auto export: SKIPPED (disabled / wrong day / already sent / missing email)
+
+=================== 29/12/2025 11:20:02,45 =================== 
+C:\Users\samsung\Desktop\VigiFroid_App\venv\Lib\site-packages\flask_limiter\_extension.py:364: UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+  warnings.warn(
+Auto export: SENT
+=================== 29/12/2025 11:30:27,12 =================== 
+C:\Users\samsung\Desktop\VigiFroid_App\venv\Lib\site-packages\flask_limiter\_extension.py:364: UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+  warnings.warn(
+Auto export: SKIPPED (disabled / wrong day / already sent / missing email)
+=================== 30/12/2025 11:20:02,76 =================== 
+C:\Users\samsung\Desktop\VigiFroid_App\venv\Lib\site-packages\flask_limiter\_extension.py:364: UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+  warnings.warn(
+Auto export: SKIPPED (disabled / wrong day / already sent / missing email)
+=================== 31/12/2025 11:20:02,62 =================== 
+Error: While importing 'wsgi', an ImportError was raised:
+
+Traceback (most recent call last):
+  File "C:\Users\samsung\Desktop\VigiFroid_App\venv\Lib\site-packages\flask\cli.py", line 245, in locate_app
+    __import__(module_name)
+  File "C:\Users\samsung\Desktop\VigiFroid_App\wsgi.py", line 8, in <module>
+    from vigi import create_app
+  File "C:\Users\samsung\Desktop\VigiFroid_App\vigi\__init__.py", line 11, in <module>
+    from flask_talisman import Talisman
+ModuleNotFoundError: No module named 'flask_talisman'
+
+
+Usage: python -m flask [OPTIONS] COMMAND [ARGS]...
+Try 'python -m flask --help' for help.
+
+Error: No such command 'autoexport'.
+=================== 01/01/2026 17:29:40,38 =================== 
+Error: While importing 'wsgi', an ImportError was raised:
+
+Traceback (most recent call last):
+  File "C:\Users\samsung\Desktop\VigiFroid_App\venv\Lib\site-packages\flask\cli.py", line 245, in locate_app
+    __import__(module_name)
+  File "C:\Users\samsung\Desktop\VigiFroid_App\wsgi.py", line 8, in <module>
+    from vigi import create_app
+  File "C:\Users\samsung\Desktop\VigiFroid_App\vigi\__init__.py", line 11, in <module>
+    from flask_talisman import Talisman
+ModuleNotFoundError: No module named 'flask_talisman'
+
+
+Usage: python -m flask [OPTIONS] COMMAND [ARGS]...
+Try 'python -m flask --help' for help.
+
+Error: No such command 'autoexport'.

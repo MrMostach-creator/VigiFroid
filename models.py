@@ -5,9 +5,9 @@ from datetime import datetime, date
 
 from sqlalchemy import CheckConstraint
 from flask_login import UserMixin
-
+from typing import List
 from vigi.extensions import db
-
+from vigi.utils import parse_emails
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
@@ -69,38 +69,64 @@ class AppSettings(db.Model):
         CheckConstraint("export_day >= 1 AND export_day <= 28", name="ck_app_settings_export_day"),
         CheckConstraint("export_format IN ('pdf','csv')", name="ck_app_settings_export_format"),
         CheckConstraint("report_language IN ('ar','fr','en')", name="ck_app_settings_report_language"),
-
     )
 
     id = db.Column(db.Integer, primary_key=True)
 
-    # إيميل مسؤول الجودة
+    # legacy
     quality_email = db.Column(db.String(255), nullable=True)
-    # تفعيل/تعطيل الإرسال الشهري
+
+    # new multi
+    quality_emails = db.Column(db.Text, nullable=True)
+
     auto_export_enabled = db.Column(db.Boolean, nullable=False, default=False)
-    # اليوم فالشهر (1..28)
     export_day = db.Column(db.Integer, nullable=False, default=1)
-    # الفورما: pdf أو csv
     export_format = db.Column(db.String(10), nullable=False, default="pdf")
-    # ✅ لغة التقرير (ar/fr/en)
     report_language = db.Column(db.String(5), nullable=False, default="fr")
-    # باش ما يتعاودش الإرسال نفس الشهر
-    last_export_month = db.Column(db.String(7), nullable=True)  # "2025-12"
+
+    last_export_month = db.Column(db.String(7), nullable=True)
     last_export_at = db.Column(db.DateTime, nullable=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def __repr__(self):
         return (
-            f"<AppSettings email={self.quality_email}, enabled={self.auto_export_enabled}, "
-            f"day={self.export_day}, fmt={self.export_format}>"
+            f"<AppSettings enabled={self.auto_export_enabled}, "
+            f"day={self.export_day}, fmt={self.export_format}, "
+            f"lang={self.report_language}, "
+            f"legacy={self.quality_email}, multi={'yes' if self.quality_emails else 'no'}>"
         )
+
+    def get_recipients(self) -> List[str]:
+        """
+        Returns a clean unique list of recipient emails.
+        Merge: quality_emails (multi) + quality_email (legacy).
+        """
+        recipients: List[str] = []
+
+        # 1) multi-field (safe even if None)
+        recipients += parse_emails(self.quality_emails or "")
+
+        # 2) legacy (merge)
+        legacy = (self.quality_email or "").strip().lower()
+        if legacy:
+            recipients.append(legacy)
+
+        # unique preserve order
+        seen = set()
+        clean: List[str] = []
+        for e in recipients:
+            if e and e not in seen:
+                seen.add(e)
+                clean.append(e)
+
+        return clean
+
+    @property
+    def recipients(self) -> List[str]:
+        return self.get_recipients()
 
     @classmethod
     def get(cls):
-        """
-        Singleton: كنرجّعو دائماً سطر واحد من app_settings،
-        إلا ما كانش، كنخلقوه ونرجعوه.
-        """
         instance = cls.query.first()
         if not instance:
             instance = cls()

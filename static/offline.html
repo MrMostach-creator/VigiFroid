@@ -1,3 +1,4 @@
+<!-- templates/offline.html -->
 <!doctype html>
 <html lang="fr">
 <head>
@@ -63,11 +64,9 @@
         </button>
 
         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="langMenuBtn">
-          
           <li><a class="dropdown-item lang-option" data-lang="fr">FR </a></li>
           <li><a class="dropdown-item lang-option" data-lang="en">EN </a></li>
           <li><a class="dropdown-item lang-option" data-lang="ar">AR </a></li>
-
         </ul>
       </div>
     </div>
@@ -312,30 +311,75 @@ function daysLeft(dStr){
   return (isNaN(diff) || diff < 0) ? '0' : (diff + 'd');
 }
 
+/* ✅ NEW: escape helper (XSS-safe) */
+function esc(s){
+  return String(s ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+
+function resolveLotImage(lot){
+  const v = (lot && (lot.image_url || lot.imageUrl || lot.image)) || "";
+  const s = String(v || "").trim();
+
+  if (!s) return "/static/images/vigifroid_icon.png";
+
+  // إذا جاك URL كامل ولا كيبدأ بـ /
+  if (s.startsWith("http://") || s.startsWith("https://") || s.startsWith("/")) {
+    // Backward: /static/images/<file> → /uploads/<file>
+    if (s.startsWith("/static/images/")) {
+      return "/uploads/" + s.replace("/static/images/", "");
+    }
+    return s;
+  }
+
+  // Backward: uploads/<file> → /uploads/<file>
+  if (s.startsWith("uploads/")) return "/" + s;
+
+  // filename فقط
+  return "/uploads/" + s;
+}
+
 /* === Build card === */
 function buildLotCard(lot){
   const s = computeStatus(lot.expiry_date);
-  const imgSrc = lot.image ? `/static/images/${lot.image}` : `/static/images/vigifroid_icon.png`;
+
+  // ✅ FIX: use uploads instead of static/images
+  const imgSrc = resolveLotImage(lot);
+
   const t = LANG[lang] || LANG.fr;
+
+  /* ✅ sanitize dynamic fields */
+  const name = esc(lot.product_name || "-");
+  const pn   = esc(lot.pn || "-");
+  const ln   = esc(lot.lot_number || "-");
+  const ex   = esc(lot.expiry_date || "-");
+  const ty   = esc(lot.type || "-");
 
   return `
   <div class="col-md-6 col-lg-4">
-    <div class="card lot-card ${s}" data-expiry="${lot.expiry_date||''}">
+    <div class="card lot-card ${s}" data-expiry="${ex}">
       <div class="card-body position-relative">
         <span class="badge rounded-pill position-absolute top-0 end-0 bg-secondary days-badge">${daysLeft(lot.expiry_date)}</span>
         <div class="image-wrap mb-3 text-center">
-          <img class="img-fluid lot-image" src="${imgSrc}" alt="${lot.product_name||'-'}" loading="lazy"
+          <img class="img-fluid lot-image"
+               src="${imgSrc}"
+               alt="${name}"
+               loading="lazy"
                onerror="this.onerror=null;this.src='/static/images/vigifroid_icon.png';" />
         </div>
-        <h5 class="card-title text-truncate">${lot.product_name||'-'}</h5>
+        <h5 class="card-title text-truncate">${name}</h5>
         <p class="card-text">
-          <strong>${t.pn}:</strong> ${lot.pn||'-'}<br>
-          <strong>${t.lot}:</strong> ${lot.lot_number||'-'}<br>
-          <strong>${t.expiry}:</strong> ${lot.expiry_date||'-'}<br>
-          <strong>${t.type}:</strong> <span class="badge bg-secondary">${lot.type||'-'}</span>
+          <strong>${t.pn}:</strong> ${pn}<br>
+          <strong>${t.lot}:</strong> ${ln}<br>
+          <strong>${t.expiry}:</strong> ${ex}<br>
+          <strong>${t.type}:</strong> <span class="badge bg-secondary">${ty}</span>
         </p>
         <div class="status-bar mb-3 ${s}">
-          <span class="status-text">${s.toUpperCase()}</span>
+          <span class="status-text">${String(s || "").toUpperCase()}</span>
         </div>
       </div>
     </div>
@@ -438,17 +482,21 @@ function renderLots(){
 /* === Filter === */
 function applyFilter(e){
   e.preventDefault();
-  const q=document.getElementById("searchInput").value.toLowerCase().trim();
-  const st=document.getElementById("statusFilter").value;
+  const q = String(document.getElementById("searchInput").value || "").toLowerCase().trim();
+  const st = document.getElementById("statusFilter").value;
   currentPage=1;
-  filteredLots=lotsCache.filter(l=>{
-    const matchQ=!q || (l.product_name||"").toLowerCase().includes(q)
-      || (l.pn||"").toLowerCase().includes(q)
-      || (l.lot_number||"").toLowerCase().includes(q);
+
+  filteredLots = lotsCache.filter(l=>{
+    const pn = String(l.pn || "").toLowerCase();
+    const nm = String(l.product_name || "").toLowerCase();
+    const ln = String(l.lot_number || "").toLowerCase();
+
+    const matchQ = !q || nm.includes(q) || pn.includes(q) || ln.includes(q);
     const matchSt = !st || computeStatus(l.expiry_date) === st;
 
     return matchQ && matchSt;
   });
+
   renderLots();
   renderPagination(filteredLots.length);
 }

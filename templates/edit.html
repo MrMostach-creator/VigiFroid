@@ -25,7 +25,7 @@
         {% if lot.image %}
         <label class="form-label">{{ _('Current image:') }}</label>
         <div class="text-center mb-3">
-          <img class="img-fluid" src="{{ url_for('static', filename='images/' ~ lot.image) }}" alt="Current image"
+          <img class="img-fluid" src="{{ uploaded_url(lot.image) }}" alt="Current image"
             style="max-height: 200px;">
         </div>
         {% endif %}

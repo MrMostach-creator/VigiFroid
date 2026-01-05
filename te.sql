@@ -1,2 +1,3 @@
-SELECT last_export_month, last_export_at
-FROM app_settings;
+SELECT indexname, indexdef
+FROM pg_indexes
+WHERE tablename = 'lots';

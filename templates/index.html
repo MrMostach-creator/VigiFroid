@@ -130,7 +130,7 @@
 
           <div class="image-wrap mb-3 text-center">
             {% if lot.image %}
-            <img class="img-fluid lot-image" src="{{ url_for('static', filename='images/' ~ lot.image) }}"
+            <img class="img-fluid lot-image" src="{{ uploaded_url(lot.image) }}"
               alt="{{ lot.product_name }}" loading="lazy">
             {% else %}
             <div class="img-placeholder">—</div>
@@ -257,8 +257,8 @@
     "pn": lot.pn,
     "lot_number": lot.lot_number,
     "expiry_date": lot.expiry_date.strftime('%Y-%m-%d') if lot.expiry_date else '',
-    "status": lot.temp_status|default('unknown'),
-    "image": lot.image or '',
+    "status": (lot.status or lot.temp_status or 'unknown'),
+    "image": uploaded_url(lot.image) if lot.image else '',
     "type": lot.type or ''
   }) %}
 {% endfor %}
@@ -281,32 +281,36 @@ document.addEventListener('submit', (e) => {
 });
 
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.ready.then(() => {
-      // --- Send lots ---
-      navigator.serviceWorker.controller?.postMessage({
-        type: "LOTS_SAVE",
-        data: lotsData
-      });
+  navigator.serviceWorker.ready.then((reg) => {
+    // ✅ send to active SW even if controller is null on first load
+    const sw = reg.active || reg.waiting || reg.installing;
+    if (!sw) return;
 
-      // --- Send images in small chunks ---
-      const imageUrls = lotsData
-        .filter(l => l.image && l.image.trim() !== "")
-        .map(l => `/static/images/${l.image}`);
-
-      const chunk = (arr, size = 4) =>
-        Array.from({ length: Math.ceil(arr.length / size) },
-          (_, i) => arr.slice(i * size, i * size + size));
-
-      chunk(imageUrls, 4).forEach(grp => {
-        navigator.serviceWorker.controller?.postMessage({
-          type: "CACHE_URLS",
-          urls: grp
-        });
-      });
-
-      console.log("📦 Lots sent:", lotsData.length, " | 🖼 images:", imageUrls.length);
+    // --- Send lots ---
+    sw.postMessage({
+      type: "LOTS_SAVE",
+      data: lotsData
     });
-  }
+
+    // --- Send images in small chunks ---
+    const imageUrls = lotsData
+      .filter(l => l.image && String(l.image).trim() !== "")
+      .map(l => String(l.image).trim());
+
+    const chunk = (arr, size = 4) =>
+      Array.from({ length: Math.ceil(arr.length / size) },
+        (_, i) => arr.slice(i * size, i * size + size));
+
+    chunk(imageUrls, 4).forEach(grp => {
+      sw.postMessage({
+        type: "CACHE_URLS",
+        urls: grp
+      });
+    });
+
+    console.log("📦 Lots sent:", lotsData.length, " | 🖼 images:", imageUrls.length);
+  });
+}
 </script>
 
 {% endblock %}

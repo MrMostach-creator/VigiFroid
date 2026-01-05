@@ -45,3 +45,71 @@ Usage: python -m flask [OPTIONS] COMMAND [ARGS]...
 Try 'python -m flask --help' for help.
 
 Error: No such command 'autoexport'.
+=================== 02/01/2026 11:20:02,30 =================== 
+Error: While importing 'wsgi', an ImportError was raised:
+
+Traceback (most recent call last):
+  File "C:\Users\samsung\Desktop\VigiFroid_App\venv\Lib\site-packages\flask\cli.py", line 245, in locate_app
+    __import__(module_name)
+  File "C:\Users\samsung\Desktop\VigiFroid_App\wsgi.py", line 8, in <module>
+    from vigi import create_app
+  File "C:\Users\samsung\Desktop\VigiFroid_App\vigi\__init__.py", line 11, in <module>
+    from flask_talisman import Talisman
+ModuleNotFoundError: No module named 'flask_talisman'
+
+
+Usage: python -m flask [OPTIONS] COMMAND [ARGS]...
+Try 'python -m flask --help' for help.
+
+Error: No such command 'autoexport'.
+=================== 03/01/2026 20:47:09,57 =================== 
+Error: While importing 'wsgi', an ImportError was raised:
+
+Traceback (most recent call last):
+  File "C:\Users\samsung\Desktop\VigiFroid_App\venv\Lib\site-packages\flask\cli.py", line 245, in locate_app
+    __import__(module_name)
+  File "C:\Users\samsung\Desktop\VigiFroid_App\wsgi.py", line 8, in <module>
+    from vigi import create_app
+  File "C:\Users\samsung\Desktop\VigiFroid_App\vigi\__init__.py", line 11, in <module>
+    from flask_talisman import Talisman
+ModuleNotFoundError: No module named 'flask_talisman'
+
+
+Usage: python -m flask [OPTIONS] COMMAND [ARGS]...
+Try 'python -m flask --help' for help.
+
+Error: No such command 'autoexport'.
+=================== 04/01/2026 20:55:50,53 =================== 
+Error: While importing 'wsgi', an ImportError was raised:
+
+Traceback (most recent call last):
+  File "C:\Users\samsung\Desktop\VigiFroid_App\venv\Lib\site-packages\flask\cli.py", line 245, in locate_app
+    __import__(module_name)
+  File "C:\Users\samsung\Desktop\VigiFroid_App\wsgi.py", line 8, in <module>
+    from vigi import create_app
+  File "C:\Users\samsung\Desktop\VigiFroid_App\vigi\__init__.py", line 11, in <module>
+    from flask_talisman import Talisman
+ModuleNotFoundError: No module named 'flask_talisman'
+
+
+Usage: python -m flask [OPTIONS] COMMAND [ARGS]...
+Try 'python -m flask --help' for help.
+
+Error: No such command 'autoexport'.
+=================== 05/01/2026 21:10:05,40 =================== 
+Error: While importing 'wsgi', an ImportError was raised:
+
+Traceback (most recent call last):
+  File "C:\Users\samsung\Desktop\VigiFroid_App\venv\Lib\site-packages\flask\cli.py", line 245, in locate_app
+    __import__(module_name)
+  File "C:\Users\samsung\Desktop\VigiFroid_App\wsgi.py", line 8, in <module>
+    from vigi import create_app
+  File "C:\Users\samsung\Desktop\VigiFroid_App\vigi\__init__.py", line 11, in <module>
+    from flask_talisman import Talisman
+ModuleNotFoundError: No module named 'flask_talisman'
+
+
+Usage: python -m flask [OPTIONS] COMMAND [ARGS]...
+Try 'python -m flask --help' for help.
+
+Error: No such command 'autoexport'.

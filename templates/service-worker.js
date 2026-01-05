@@ -1,6 +1,6 @@
 /* ==========================================================
    🧠 VigiFroid Service Worker — Hardened Precaching & Runtime
-   A+B+C safeguards
+   Offline-first assets + safe page caching + image fallback
    ========================================================== */
 
 const CACHE_VERSION = "{{ config.ASSET_VERSION }}";
@@ -10,7 +10,15 @@ const RUNTIME  = `vf-runtime-${CACHE_VERSION}`;
 const DB_NAME = "vigifroid-db";
 const STORE_PENDING = "pending-operations";
 
-// ✅ A) نْحَيّد /lots من الـ precache باش ما يتكاشّاش login تحت نفس المفتاح
+// ⚠️ ما نكاشيوش صفحات auth
+const AUTH_PATHS = [
+  "/auth/login",
+  "/auth/logout",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+  "/auth/welcome"
+];
+
 const PRECACHE_URLS = [
   "{{ url_for('main.index') }}",
   "/offline.html",
@@ -27,18 +35,19 @@ const PRECACHE_URLS = [
   "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
 ];
 
-const AUTH_PATHS = ["/auth/login", "/auth/logout"];
-
 // ========== IndexedDB utils ==========
 function openDB() {
   return new Promise((res, rej) => {
     const req = indexedDB.open(DB_NAME, 1);
     req.onupgradeneeded = e => {
       const db = e.target.result;
+
       if (!db.objectStoreNames.contains(STORE_PENDING))
         db.createObjectStore(STORE_PENDING, { keyPath: "id", autoIncrement: true });
+
       if (!db.objectStoreNames.contains("lots"))
         db.createObjectStore("lots", { keyPath: "id" });
+
       if (!db.objectStoreNames.contains("logs"))
         db.createObjectStore("logs", { keyPath: "timestamp" });
     };
@@ -54,6 +63,12 @@ function txComplete(tx) {
 }
 
 // ========== Helpers ==========
+function isAuthURL(u) {
+  try {
+    const p = new URL(u, self.location.origin).pathname;
+    return AUTH_PATHS.some(ap => p.startsWith(ap));
+  } catch { return false; }
+}
 function isSamePath(u1, u2) {
   try {
     const a = new URL(u1, self.location.origin);
@@ -61,28 +76,32 @@ function isSamePath(u1, u2) {
     return a.pathname === b.pathname;
   } catch { return false; }
 }
-function isAuthURL(u) {
+function shouldCacheResponse(reqUrl, res) {
   try {
-    const p = new URL(u, self.location.origin).pathname;
-    return AUTH_PATHS.some(ap => p.startsWith(ap));
-  } catch { return false; }
-}
-function shouldCachePage(req, res) {
-  try {
+    if (!res || !res.ok) return false;
+    if (res.redirected) return false;
+
     const url = new URL(res.url);
-    if (url.origin !== self.location.origin) return false;
-    if (res.redirected) return false;               // ✅ B/C: لا نخزّن نتائج redirect
-    if (!res.ok) return false;
-    if (isAuthURL(url.href)) return false;          // ✅ C: لا نخزّن صفحات الأوث/اللوغين
+    if (url.origin !== self.location.origin) return true; // CDN ok
+
+    // ما نخزّنش auth pages
+    if (isAuthURL(url.href)) return false;
+
+    // احترام no-store إلا كان
+    const cc = (res.headers.get("Cache-Control") || "").toLowerCase();
+    if (cc.includes("no-store")) return false;
+
     return true;
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
 // ========== INSTALL ==========
 self.addEventListener("install", e => {
   e.waitUntil((async () => {
     const cache = await caches.open(PRECACHE);
-    // ✅ B) Precaching آمن: نخزّن غير الردود 200، بدون redirect، وبنفس الـ path
+
     await Promise.allSettled(PRECACHE_URLS.map(async (rawUrl) => {
       try {
         const res = await fetch(rawUrl, { cache: "no-store", redirect: "follow" });
@@ -97,8 +116,10 @@ self.addEventListener("install", e => {
         console.warn("⚠️ Network skip:", rawUrl, err);
       }
     }));
+
     console.log("✅ Service Worker installed");
   })());
+
   self.skipWaiting();
 });
 
@@ -119,8 +140,9 @@ self.addEventListener("fetch", event => {
   // POST/PUT/DELETE ⇒ store offline
   if (["POST","PUT","DELETE"].includes(req.method)) {
     event.respondWith((async () => {
-      try { return await fetch(req.clone()); }
-      catch {
+      try {
+        return await fetch(req.clone());
+      } catch {
         try {
           const body = await req.clone().json().catch(()=>({}));
           await savePendingOperation(req.url, req.method, body);
@@ -133,22 +155,23 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // 📄 Pages: Network-first
+  // 📄 Pages (navigate/document): Network-first
   if (req.mode === "navigate" || req.destination === "document") {
     event.respondWith((async () => {
       const runtime = await caches.open(RUNTIME);
       const precache = await caches.open(PRECACHE);
-      try {
-const net = await fetch(req);
-const p = new URL(req.url);
-// لا تكيّش أي صفحة تحت /auth
-if (net.ok && net.type !== "opaqueredirect" && !p.pathname.startsWith("/auth")) {
-  runtime.put(req, net.clone());
-}
-return net;
 
+      try {
+        const net = await fetch(req);
+
+        // ما نكاشيوش auth pages
+        if (shouldCacheResponse(req.url, net)) {
+          // نخزّن غير نفس-origin pages (باش ما نديرش مشاكل فـ keys)
+          try { await runtime.put(req, net.clone()); } catch {}
+        }
+
+        return net;
       } catch {
-        // فالأوفلاين: رجّع runtime → precache → offline.html
         return (await runtime.match(req)) ||
                (await precache.match(req)) ||
                (await precache.match("/offline.html")) ||
@@ -158,22 +181,27 @@ return net;
     return;
   }
 
-  // 🧩 Static assets: Cache-first
+  // 🧩 Assets (css/js/images/fonts): Cache-first
   event.respondWith((async () => {
     const runtime = await caches.open(RUNTIME);
     const cached = await runtime.match(req);
     if (cached) return cached;
-    try {
-const r = await fetch(req);
-if (r.ok && r.type !== "opaqueredirect") {
-  const p = new URL(req.url);
-  if (!p.pathname.startsWith("/auth")) {
-    runtime.put(req, r.clone());
-  }
-}
-return r;
 
+    try {
+      const r = await fetch(req);
+      if (shouldCacheResponse(req.url, r)) {
+        try { await runtime.put(req, r.clone()); } catch {}
+      }
+      return r;
     } catch {
+      // ✅ مهم: فالأوفلاين الصور ما خاصهاش ترجع offline.html
+      if (req.destination === "image") {
+        const precache = await caches.open(PRECACHE);
+        return (await precache.match("/static/images/vigifroid_icon.png?v={{ config.ASSET_VERSION }}")) ||
+               (await precache.match("/static/images/vigifroid_icon.png")) ||
+               new Response("", { status: 504 });
+      }
+
       const precache = await caches.open(PRECACHE);
       return (await precache.match("/offline.html")) || new Response("", { status: 504 });
     }
@@ -200,6 +228,7 @@ async function syncPendingOperations() {
   const all = await new Promise((res,rej)=>{
     const r=store.getAll(); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);
   });
+
   for (const op of all) {
     try {
       const r = await fetch(op.url,{
@@ -219,7 +248,7 @@ async function syncPendingOperations() {
   }
 }
 
-// ========== Unified MESSAGE HANDLER ==========
+// ========== MESSAGE HANDLER ==========
 self.addEventListener("message", async event => {
   try {
     const { type, data, urls } = event.data || {};
@@ -234,18 +263,25 @@ self.addEventListener("message", async event => {
       console.log(`💾 Lots saved locally: ${data.length}`);
     }
 
-    // Cache product images (chunked from page script)
+    // Cache images URLs (ex: /uploads/xxx.jpg)
     if (type === "CACHE_URLS" && Array.isArray(urls) && urls.length) {
       const runtime = await caches.open(RUNTIME);
+
       await Promise.allSettled(urls.map(async (u)=>{
         try {
           const existing = await runtime.match(u);
-          if (!existing) {
-            const res = await fetch(u,{ cache:"no-store", redirect:"follow" });
-            if (res.ok && !res.redirected) await runtime.put(u,res.clone());
+          if (existing) return;
+
+          const res = await fetch(u, { cache:"no-store", redirect:"follow" });
+          if (res.ok && !res.redirected) {
+            await runtime.put(u, res.clone());
+            console.log("🖼 cached img:", u);
+          } else {
+            console.warn("⚠️ image skip:", u, res.status);
           }
-          console.log("🖼 cached img:", u);
-        } catch { console.warn("⚠️ image skip:", u); }
+        } catch (e) {
+          console.warn("⚠️ image skip:", u, e);
+        }
       }));
     }
 

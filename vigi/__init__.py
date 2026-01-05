@@ -3,7 +3,7 @@ import os
 import random
 import time
 
-from flask import Flask, current_app, session, request, render_template, make_response
+from flask import Flask, current_app, session, request, render_template, make_response, send_from_directory, url_for, abort
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import text
 from flask_babel import format_date, format_datetime, format_time
@@ -28,15 +28,43 @@ def create_app(config_class="config.Config"):
     app.config.from_object(config_class)
 
     app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
-    app.config.setdefault("UPLOAD_FOLDER", os.path.join(app.root_path, "static", "images"))
+
+    # ✅ uploads always in instance/uploads (public via /uploads/<file>)
+    app.config["UPLOAD_FOLDER"] = os.path.join(base_dir, "instance", "uploads")
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     # ── 🔐 Security Headers / CSP ───────────────────────
     csp = {
-        "default-src": "'self'",
-        "script-src": "'self'",
-        "style-src": "'self'",
-        "img-src": "'self' data:",
-        "font-src": "'self'",
+        "default-src": ["'self'"],
+
+        "connect-src": [
+            "'self'",
+            "https://cdn.jsdelivr.net",
+            "https://fonts.googleapis.com",
+            "https://fonts.gstatic.com",
+        ],
+
+        "script-src": [
+            "'self'",
+            "'unsafe-inline'",
+            "https://cdn.jsdelivr.net",
+        ],
+        "style-src": [
+            "'self'",
+            "'unsafe-inline'",
+            "https://cdn.jsdelivr.net",
+            "https://fonts.googleapis.com",
+        ],
+        "font-src": [
+            "'self'",
+            "data:",
+            "https://fonts.gstatic.com",
+        ],
+        "img-src": [
+            "'self'",
+            "data:",
+            "blob:",
+        ],
     }
 
     Talisman(
@@ -45,6 +73,25 @@ def create_app(config_class="config.Config"):
         force_https=True,
         strict_transport_security=True,
     )
+
+    # ✅ Public uploads endpoint (safe)
+    @app.get("/uploads/<path:filename>")
+    def uploaded_file(filename):
+        filename = os.path.basename(str(filename))
+
+        ext = os.path.splitext(filename)[1].lower()
+        if ext not in {".png", ".jpg", ".jpeg", ".webp"}:
+            abort(404)
+
+        resp = send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+        resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        return resp
+
+    def uploaded_url(filename):
+        if not filename:
+            return ""
+        filename = os.path.basename(str(filename))
+        return url_for("uploaded_file", filename=filename)
 
     # init extensions
     db.init_app(app)
@@ -80,7 +127,8 @@ def create_app(config_class="config.Config"):
             "format_date": format_date,
             "format_datetime": format_datetime,
             "format_time": format_time,
-            "fmt_date": fmt_date_dmy,  # ✅ NEW
+            "fmt_date": fmt_date_dmy,
+            "uploaded_url": uploaded_url,  # ✅ needed by templates
             "config": app.config,
         }
 
@@ -136,7 +184,7 @@ def create_app(config_class="config.Config"):
         time.sleep(1)
         return {"random_number": n, "cached_for": "15 seconds"}
 
-    # ✅ Register blueprints (WITHOUT url_prefix هنا لأنو موجود داخل Blueprint)
+    # ✅ Register blueprints
     from vigi.main.routes import main_bp
     app.register_blueprint(main_bp)
 
